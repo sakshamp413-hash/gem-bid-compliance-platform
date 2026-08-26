@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-gov-paper text-slate-800;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+.card {
+  @apply bg-white rounded-lg shadow-sm border border-slate-200 p-4;
+}
+
+.btn {
+  @apply inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50;
+}
+
+.btn-primary {
+  @apply btn bg-gov-blue text-white hover:bg-gov-navy;
+}
+
+.btn-outline {
+  @apply btn border border-slate-300 text-slate-700 hover:bg-slate-100;
+}
+
+.btn-danger {
+  @apply btn bg-red-600 text-white hover:bg-red-700;
+}
+
+.input {
+  @apply w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gov-blue/40;
+}
+
+.label {
+  @apply block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1;
+}
