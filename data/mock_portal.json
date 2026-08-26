@@ -54,10 +54,32 @@
       "turnover_crore": 22.0,
       "status": "Active",
       "issued_on": "2022-09-30"
+    },
+    "UDYAM-MH-27-0003141": {
+      "legal_name": "FrontRunner Pumps Pvt. Ltd.",
+      "trade_name": "FrontRunner",
+      "pan": "AAFCF1234K",
+      "classification": "Small",
+      "sector": "services",
+      "investment_crore": 2.0,
+      "turnover_crore": 12.0,
+      "status": "Active",
+      "issued_on": "2023-08-10"
+    },
+    "UDYAM-KA-01-0007159": {
+      "legal_name": "QuickSpares Trading Co.",
+      "trade_name": "QuickSpares",
+      "pan": "AAQFQ1234K",
+      "classification": "Micro",
+      "sector": "services",
+      "investment_crore": 0.6,
+      "turnover_crore": 1.8,
+      "status": "Active",
+      "issued_on": "2022-12-05"
     }
   },
   "gstin": {
-    "27AABCC1234K1ZX": {
+    "27AABCC1234K1ZW": {
       "legal_name": "CleanCorp Industrial Solutions Pvt. Ltd.",
       "trade_name": "CleanCorp",
       "status": "Active",
@@ -69,7 +91,7 @@
         }
       }
     },
-    "33AAVFB1234K1ZN": {
+    "33AAVFB1234K1ZE": {
       "legal_name": "Borderline Traders",
       "trade_name": "BorderlineTraders",
       "status": "Active",
@@ -81,7 +103,7 @@
         }
       }
     },
-    "27AABFF1234K1Z9": {
+    "27AABFF1234K1ZN": {
       "legal_name": "FraudFillers Traders",
       "trade_name": "FraudFillers",
       "status": "Cancelled",
@@ -93,7 +115,7 @@
         }
       }
     },
-    "29AAKFK1234K1ZY": {
+    "29AAKFK1234K1Z5": {
       "legal_name": "Kaveri Engineering Works",
       "trade_name": "Kaveri Engg",
       "status": "Active",
@@ -105,7 +127,7 @@
         }
       }
     },
-    "33AAPCS1234K1ZJ": {
+    "33AAPCS1234K1Z9": {
       "legal_name": "Southern Pumps LLP",
       "trade_name": "Southern Pumps",
       "status": "Active",
@@ -114,6 +136,30 @@
           "status": "filed",
           "period": "Q2 FY 2025-26",
           "filed_on": "2025-08-02"
+        }
+      }
+    },
+    "27AAFCF1234K1ZP": {
+      "legal_name": "FrontRunner Pumps Pvt. Ltd.",
+      "trade_name": "FrontRunner",
+      "status": "Active",
+      "returns": {
+        "latest": {
+          "status": "filed",
+          "period": "Q2 FY 2025-26",
+          "filed_on": "2025-08-10"
+        }
+      }
+    },
+    "29AAQFQ1234K1ZT": {
+      "legal_name": "QuickSpares Trading Co.",
+      "trade_name": "QuickSpares",
+      "status": "Active",
+      "returns": {
+        "latest": {
+          "status": "filed",
+          "period": "Q2 FY 2025-26",
+          "filed_on": "2025-07-28"
         }
       }
     }
@@ -137,6 +183,14 @@
     },
     "AAPCS1234K": {
       "name": "Southern Pumps LLP",
+      "status": "PAN valid"
+    },
+    "AAFCF1234K": {
+      "name": "FrontRunner Pumps Pvt. Ltd.",
+      "status": "PAN valid"
+    },
+    "AAQFQ1234K": {
+      "name": "QuickSpares Trading Co.",
       "status": "PAN valid"
     }
   },

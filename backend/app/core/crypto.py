@@ -54,10 +54,3 @@ def decrypt_json(ciphertext: str | None):
         return json.loads(decrypt_value(ciphertext) or "")
     except (ValueError, TypeError):
         return None
-
-
-class EncryptedString:
-    """SQLAlchemy TypeDecorator storing a field encrypted at rest."""
-
-    # used via sqlalchemy TypeDecorator in models
-    pass

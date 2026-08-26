@@ -40,6 +40,12 @@ documents (extracted + signed/tamper analyzed)
   → pending requirements + plain-language recommendation (Qualify /
     Needs-Review / Disqualify-candidate)
   → persist + hash-chained audit entries
+  → officer PDF report (report_service.py) keyed to the audit-chain head
+
+Tender-level (collusion.py): similarity graph over {pan, gstin, cin,
+bank_account, phone, address, signatory_name} — exact for identifiers,
+form-aware fuzzy for names — emits clusters with shared-attribute evidence
+(rule XVERIFY/collusion) for the Cross-bidder integrity panel.
 ```
 
 ## Frontend (`frontend/src`)

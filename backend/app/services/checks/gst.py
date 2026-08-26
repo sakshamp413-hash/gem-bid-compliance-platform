@@ -79,18 +79,27 @@ def check_gst(context) -> CheckOutput:
         out.confidence = 0.97
         return out
 
-    # name consistency
-    import rapidfuzz.fuzz as fuzz
+    # name consistency (transliteration/form-aware)
+    from app.core.name_match import name_match
 
     portal_name = str(pd.get("legal_name", ""))
-    ratio = fuzz.ratio(portal_name.upper(), str(bidder.legal_name or "").upper())
+    m = name_match(portal_name, bidder.legal_name)
+    ratio = m["score"]
     if ratio < 80:
         add_evidence(
             out, source="portal", field="gstin.name", value=portal_name,
-            quote=f"name match ratio {ratio:.0f}% vs submitted legal name", note="rapidfuzz",
+            quote=f"name match ratio {ratio:.0f}% vs submitted legal name "
+                  f"(normalized: '{m['normalized_a']}' vs '{m['normalized_b']}')",
+            note="rapidfuzz over normalized names",
         )
         out.result = "flag"
         out.summary = f"GST registry name '{portal_name}' mismatches submitted legal name ({ratio:.0f}%)."
+    else:
+        add_evidence(
+            out, source="portal", field="gstin.name", value=portal_name,
+            quote=f"matches submitted legal name ({ratio:.0f}% after normalization: "
+                  f"'{m['normalized_a']}')", note="rapidfuzz over normalized names",
+        )
 
     # return-filing status
     returns = context.adapter.gst_return_status(gstin)

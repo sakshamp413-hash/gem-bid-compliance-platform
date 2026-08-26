@@ -118,9 +118,11 @@ def extract_fields_deterministic(doc_type: str, text: str) -> dict[str, Any]:
 
     elif doc_type == "oem_auth":
         put("oem_name", _find_label(lines, "manufacturer", "principal"))
+        # NB: "authorised distributor" etc. are NOT label anchors here — prose
+        # letters wrap onto lines that start with those words (label lookups
+        # would capture the rest of the sentence). Handled by prose regex below.
         put("authorized_bidder_name",
-            _find_label(lines, "authorised dealer", "authorized dealer",
-                        "authorised distributor", "authorized distributor"))
+            _find_label(lines, "authorised dealer", "authorized dealer"))
         put("item_description", _find_label(lines, "item description", "item", "product", "goods"))
         put("valid_from", _find_label(lines, "valid from", "effective from"))
         put("valid_to", _find_label(lines, "valid to", "valid until", "expiry"))
@@ -132,8 +134,9 @@ def extract_fields_deterministic(doc_type: str, text: str) -> dict[str, Any]:
                 put("oem_name", m.group(1).strip(), 0.8)
         if not out.get("authorized_bidder_name"):
             m = re.search(
-                r"authoris[ez][a-z]*\s+([A-Za-z0-9&][A-Za-z0-9 &.,'-]*?)(?:\s+as our|\s+for supply|\s+for|\s+to supply|\s*\.)",
-                text, re.IGNORECASE,
+                r"authoris[ez][a-z]*\s+([A-Za-z0-9&][A-Za-z0-9 &.,'-]*?)"
+                r"(?:\s+as our|\s+for supply|\s+to supply|\s+for\b|\s*\.\s*$)",
+                text, re.IGNORECASE | re.MULTILINE,
             )
             if m:
                 put("authorized_bidder_name", m.group(1).strip(), 0.8)
@@ -151,6 +154,11 @@ def extract_fields_deterministic(doc_type: str, text: str) -> dict[str, Any]:
         put("claimed_local_content_percent", pm.group(1) if pm else None)
         put("item", _find_label(lines, "item", "product"))
         put("declared_class", _find_label(lines, "declared class", "class", "category"))
+        # cost break-up / BoM (Make-in-India domestic value addition)
+        m_tot = re.search(r"[Tt]otal [Vv]alue[^0-9]*([\d.]+)", text)
+        put("total_value_lakh", m_tot.group(1) if m_tot else None)
+        m_imp = re.search(r"[Ii]mported [Cc]ontent [Vv]alue[^0-9]*([\d.]+)", text)
+        put("imported_value_lakh", m_imp.group(1) if m_imp else None)
         put("certification_date",
             _find_label(lines, "date of certification", "certification date")
             or (_DATE_RE.search(text).group(0) if _DATE_RE.search(text) else None))

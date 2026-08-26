@@ -49,3 +49,15 @@ def create_tender(
     append_audit(db, actor=f"user:{admin.id}", action="create_tender",
                  entity=f"tender:{tender.id}", payload={"gem_ref": tender.gem_ref})
     return tender
+
+
+@router.get("/{tender_id}/collusion")
+def tender_collusion(
+    tender_id: int,
+    _: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Cross-bidder integrity: collusion / duplicate-bidder clusters on a tender."""
+    from app.services.collusion import detect_collusion
+
+    return detect_collusion(db, tender_id)

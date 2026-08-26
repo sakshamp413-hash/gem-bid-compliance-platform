@@ -211,6 +211,32 @@ export const api = {
     }),
   audit: () => request<AuditEntry[]>("/audit"),
   auditVerify: () => request<{ valid: boolean; records: number; first_broken_seq: number | null; broken_reason: string | null }>("/audit/verify"),
+  collusion: (tenderId: number) =>
+    request<{
+      clusters: {
+        members: { submission_id: number; bidder_name: string }[];
+        links: {
+          between: number[];
+          attributes: { attribute: string; value: string; match: string; confidence: number }[];
+        }[];
+      }[];
+      notes: string[];
+    }>(`/tenders/${tenderId}/collusion`),
+  downloadReport: async (submissionId: number) => {
+    const headers: Record<string, string> = {};
+    if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+    const res = await fetch(`${API}/submissions/${submissionId}/report.pdf`, { headers });
+    if (!res.ok) throw new Error(`report download failed (${res.status})`);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `compliance_report_submission_${submissionId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  },
   stats: () => request<Record<string, unknown>>("/admin/stats"),
   rules: () => request<{ data: Record<string, unknown>; file: string }>("/admin/rules"),
   updateRules: (data: Record<string, unknown>) =>

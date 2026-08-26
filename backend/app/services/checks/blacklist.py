@@ -7,7 +7,7 @@ and caps the assessment at high risk.
 """
 from __future__ import annotations
 
-import rapidfuzz.fuzz as fuzz
+from app.core.name_match import name_match
 
 from app.services.checks.base import CheckOutput, add_evidence
 
@@ -32,23 +32,25 @@ def check_blacklist(context) -> CheckOutput:
     exact_hit = False
     fuzzy_hits = []
 
-    for m in matches:
+    for m_entry in matches:
         hit_by = []
-        if m.get("pan") and bidder.pan and m["pan"].upper() == str(bidder.pan).upper():
+        if m_entry.get("pan") and bidder.pan and m_entry["pan"].upper() == str(bidder.pan).upper():
             hit_by.append("PAN exact")
-        if m.get("cin") and bidder.cin and m["cin"].upper() == str(bidder.cin).upper():
+        if m_entry.get("cin") and bidder.cin and m_entry["cin"].upper() == str(bidder.cin).upper():
             hit_by.append("CIN exact")
-        if not hit_by and m.get("name") and bidder.legal_name:
-            ratio = fuzz.ratio(m["name"].upper(), str(bidder.legal_name).upper())
+        if not hit_by and m_entry.get("name") and bidder.legal_name:
+            m = name_match(m_entry["name"], bidder.legal_name)
+            ratio = m["score"]
             if ratio >= threshold:
                 hit_by.append(f"name fuzzy {ratio:.0f}%")
-                fuzzy_hits.append((m, ratio))
+                fuzzy_hits.append((m_entry, ratio))
             elif ratio >= 60:  # near-miss → flag for human review
-                fuzzy_hits.append((m, ratio))
+                fuzzy_hits.append((m_entry, ratio))
 
         if hit_by:
-            add_evidence(out, source="portal", field="blacklist.match", value=str(m.get("name", "")),
-                         quote=f"debarred {m.get('period', '')} — matched by {', '.join(hit_by)}")
+            add_evidence(out, source="portal", field="blacklist.match",
+                         value=str(m_entry.get("name", "")),
+                         quote=f"debarred {m_entry.get('period', '')} — matched by {', '.join(hit_by)}")
             if any("exact" in h for h in hit_by):
                 exact_hit = True
 

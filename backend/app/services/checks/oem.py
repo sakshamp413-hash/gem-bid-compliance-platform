@@ -34,14 +34,17 @@ def check_oem(context) -> CheckOutput:
         return out
 
     # name consistency: authorized party must be the bidder
-    import rapidfuzz.fuzz as fuzz
+    from app.core.name_match import name_match
 
-    ratio = fuzz.ratio(str(bidder_name).upper(), str(context.bidder.legal_name or "").upper())
+    m = name_match(str(bidder_name), context.bidder.legal_name)
+    ratio = m["score"]
     if ratio < 80:
         add_evidence(out, doc_id=doc.get("_doc_id"), doc_type="oem_auth",
                      field="authorized_bidder_name", value=str(bidder_name),
-                     quote=f"authorized party does not match bidder legal name (ratio {ratio:.0f}%)",
-                     note="rapidfuzz")
+                     quote=f"authorized party does not match bidder legal name "
+                           f"(ratio {ratio:.0f}% after normalization: "
+                           f"'{m['normalized_a']}' vs '{m['normalized_b']}')",
+                     note="rapidfuzz over normalized names")
         out.summary = "OEM letter authorizes a different entity than the bidder."
         return out
 

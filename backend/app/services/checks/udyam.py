@@ -60,16 +60,18 @@ def check_udyam(context) -> CheckOutput:
     add_evidence(out, source="portal", field="udyam.pan", value=str(pd.get("pan", "")))
 
     # cross-document consistency: portal name vs submission legal name
-    import rapidfuzz.fuzz as fuzz
+    from app.core.name_match import name_match
 
     portal_name = str(pd.get("legal_name", ""))
     legal_name = str(bidder.legal_name or "")
-    ratio = fuzz.ratio(portal_name.upper(), legal_name.upper())
+    m = name_match(portal_name, legal_name)
+    ratio = m["score"]
     if ratio < 80:
         add_evidence(
             out, source="portal", field="udyam.name", value=portal_name,
-            quote=f"name match ratio {ratio:.0f}% vs submitted legal name",
-            note="rapidfuzz",
+            quote=f"name match ratio {ratio:.0f}% vs submitted legal name "
+                  f"(normalized: '{m['normalized_a']}' vs '{m['normalized_b']}')",
+            note="rapidfuzz over normalized names",
         )
         out.result = "flag"
         out.summary = f"Udyam portal name '{portal_name}' does not match submitted legal name (ratio {ratio:.0f}%)."
@@ -77,7 +79,7 @@ def check_udyam(context) -> CheckOutput:
     else:
         add_evidence(
             out, source="portal", field="udyam.name", value=portal_name,
-            quote=f"matches legal name (ratio {ratio:.0f}%)", note="rapidfuzz",
+            quote=f"matches legal name (ratio {ratio:.0f}% after normalization)", note="rapidfuzz over normalized names",
         )
 
     # PAN linkage: Udyam PAN vs bidder PAN (and vs GST's embedded PAN where relevant)

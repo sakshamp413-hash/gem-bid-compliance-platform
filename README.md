@@ -40,11 +40,14 @@ The platform turns that manual drill into an **auditable, explainable, evidence-
 | Pain point | Platform capability |
 |---|---|
 | Manual cross-checking of 10+ registries | 12 compliance-check modules, each `input → format → portal cross-check → cross-document consistency → evidence-linked output` |
+| Bid-rigging / front companies | **Cross-bidder integrity**: collusion detector clusters bidders sharing PAN/GSTIN/bank/phone/address/signatory on a tender |
+| Inflated Make-in-India claims | Local-content check **computes domestic value addition from the BoM** and catches declared classes the arithmetic doesn't support |
 | Forged/tampered certificates | Real PKI signature verification (pyHanko) + PDF tamper/forgery detection (revisions, metadata timing, producer fingerprints) |
 | "Why did this bidder get rejected?" | Every flag links to the exact source document, field, value/quote, rule reference and confidence |
 | Black-box AI scores | LLM outputs are constrained to extracted evidence; thresholds come from an editable rule set; every number is explained |
 | No audit trail | Hash-chained audit log with `/audit/verify` integrity recomputation |
 | AI auto-disqualifying bidders | Human-in-the-loop: recommendation is decision-support only; officer decisions (with mandatory justification) are audited |
+| No file for the procurement record | One-click **Explainability Report (PDF)** export — score, checks, findings, document statuses, audit-head hash |
 | Gated government APIs | Clean adapter seam (`GovPortalAdapter`) — mock today, APISetu/GSP/DigiLocker adapters documented and drop-in ready |
 
 ---
@@ -68,6 +71,7 @@ flowchart LR
 
     subgraph Core["Compliance core"]
         P["Verification pipeline"]
+        COL["Collusion detector<br/>(cross-bidder graph)"]
         RE["Rule engine<br/>(rules are data — YAML)"]
         SC["Weighted scoring<br/>+ risk + pending"]
         REC["Recommendation engine"]
@@ -184,21 +188,28 @@ Ollama instance) — the UI shows the active provider via `model_meta`.
 ## The demo dataset
 
 `data/generate.py` builds a deterministic, seeded dataset: a registry (`data/mock_portal.json`) and
-**genuinely signed** PDF documents for five bidders on one tender —
+**genuinely signed** PDF documents for **seven** bidders on one tender —
 **"Supply of Industrial Pumps" (GeM/2026/B/1234567, buyer: Chennai Petroleum Corporation Limited)**:
 
 | Bidder | Intent | Signature | Result |
 |---|---|---|---|
-| **CleanCorp Industrial Solutions Pvt. Ltd.** | fully compliant | all docs signed & valid | **94.8 · Low · Qualify** |
-| **Borderline Traders** | subtle flaws: GST returns **not filed** + PAN-card name ≠ Udyam name | signed & valid | **87.2 · Medium · Needs Review** |
-| **FraudFillers Traders** | forged GST cert (**modified after signing**) + **on debarment list** + cancelled GSTIN | broken signature + tamper flags + rogue-issuer Udyam | **25.0 · High · Disqualify** |
-| Kaveri Engineering Works | unsigned scans, expired startup recognition, low local content | unsigned | **81.9 · Medium · Needs Review** |
-| Southern Pumps LLP | manufacturer (no OEM needed), fully compliant | signed & valid | **96.4 · Low · Qualify** |
+| **CleanCorp Industrial Solutions Pvt. Ltd.** | fully compliant | all docs signed & valid | **95.0 · Low · Qualify** |
+| **Borderline Traders** | subtle flaws: GST returns **not filed** + PAN-card name ≠ Udyam name | signed & valid | **87.5 · Medium · Needs Review** |
+| **FraudFillers Traders** | forged GST cert (**modified after signing**) + **on debarment list** + cancelled GSTIN + **inflated Make-in-India class** | broken signature + tamper flags + rogue-issuer Udyam | **25.0 · High · Disqualify** |
+| **Kaveri Engineering Works** | unsigned scans, expired startup recognition | unsigned | **90.1 · Medium · Needs Review** |
+| **Southern Pumps LLP** | manufacturer (no OEM needed), fully compliant | signed & valid | **96.7 · Low · Qualify** |
+| **FrontRunner Pumps Pvt. Ltd.** | colluding bidder — shares **bank account + authorized signatory** with QuickSpares; OEM validity over 2 years | signed & valid | **90.6 · Medium · Needs Review** |
+| **QuickSpares Trading Co.** | colluding bidder — same shared attributes | signed & valid | **96.2 · Low · Qualify** |
 
 The forgery is real: FraudFillers' GST certificate is signed by the demo CA, then a new PDF
 revision is appended that rewrites `/ModDate`, `/Producer` (and re-saves the file) — exactly what a
 forger produces. Signature validation reports *content modified after signing*, and the tamper
 detector reports revision count, metadata-after-signature-time and forge-tool producer fingerprints.
+
+**Collusion demo:** FrontRunner and QuickSpares look like independent, individually-compliant
+bidders (both score ≥90) — but the **Cross-bidder integrity** panel on the tender page clusters
+them on an exact bank-account match (`HDFC50200012345678`) and a shared authorized signatory
+(`K. Verma`), which is how bid-rigging actually presents in GeM tenders.
 
 ---
 
@@ -218,12 +229,19 @@ detector reports revision count, metadata-after-signature-time and forge-tool pr
    Record **Request document** with justification.
 4. **FraudFillers** — risk **High**, recommendation **Disqualify**. The red alert banner lists the
    failed documents. Open the GST certificate: **Signature INVALID**, **⚠ Tampered — modified
-   after signing**, with the three tamper reasons (revision after signing, `/ModDate` later than
-   the signature timestamp, producer `GSTN-ForgeTool 2.1 (re-signed)`). Findings: three
-   **CRITICAL** (forged document, debarment hit, cancelled GST). Record **Disqualify** with a
-   justification — note the **"overrides AI recommendation"** badge when you choose a different
-   action than suggested.
-5. **Audit Integrity** (auditor@) — chain verifies **INTACT** with N records. Then demonstrate
+   after signing**, with the tamper reasons (revision after signing, `/ModDate` later than
+   the signature timestamp, producer `GSTN-ForgeTool 2.1 (re-signed)`). Open the local-content
+   certificate: the Make-in-India check **computed 25% local content from the BoM** — Class II,
+   not the declared Class I — with the arithmetic in the evidence ("inflated MII claim").
+   Findings: three **CRITICAL** (forged document, debarment hit, cancelled GST). Record
+   **Disqualify** with a justification — note the **"overrides AI recommendation"** badge when you
+   choose a different action than suggested.
+5. **FrontRunner & QuickSpares** — both individually qualify (≥90)… but the **Cross-bidder
+   integrity** panel clusters them on the shared bank account and authorized signatory. Click a
+   member chip to open their detail; click **⬇ Download report (PDF)** on either to export the
+   signed-off compliance report (score, checks, findings, document statuses, and the audit-chain
+   head hash in the footer).
+6. **Audit Integrity** (auditor@) — chain verifies **INTACT** with N records. Then demonstrate
    tamper-evidence: edit one row in the database (e.g. `UPDATE audit_log SET actor='x' WHERE
    seq=1`) → **Re-verify chain** → **CHAIN BROKEN** with *first broken link: seq 1*.
 
@@ -250,13 +268,38 @@ detector reports revision count, metadata-after-signature-time and forge-tool pr
 
 ```bash
 cd backend
-pytest -q                 # 37 tests: GSTIN checksum, PAN/Udyam/CIN validators,
-                          # audit-chain integrity, forgery detector, 3-bidder pipeline,
-                          # auth + RBAC + rate limit + decision flow
+pytest -q                 # 63 tests: GSTIN checksum (real Luhn-mod-36 fixtures),
+                          # PAN/Udyam/CIN validators, name matching, audit-chain
+                          # integrity, forgery detector, object-stream PDFs,
+                          # local-content arithmetic, collusion clusters,
+                          # PDF report export, 5-bidder pipeline, auth + RBAC
 
 cd frontend
 npm test                  # 7 component tests (Vitest + Testing Library)
 ```
+
+## Known limitations & honesty
+
+Straight talk, because the demo must not overclaim:
+
+- **Portal adapters are documented stubs.** Live statutory APIs (GSTN, ITD, MCA21, APISetu,
+  DigiLocker) are gated behind registration/licensing. The platform runs on `MockGovPortal`
+  (seeded synthetic registry). The real onboarding paths — APISetu partner credentials, licensed
+  GSP access, DigiLocker partner flow — are fully documented in `docs/production.md`, and the
+  adapter seam means swapping them in changes zero check/scoring/UI code.
+- **OCR uses the PDF text layer for the demo corpus.** Generated certificates carry embedded text,
+  so `pdfplumber` extraction runs offline with word-level coordinates for highlight boxes.
+  PaddleOCR is the optional upgrade for scanned documents; without it, scanned PDFs degrade to
+  "needs document/manual review" rather than failing silently.
+- **Rate limiting is in-process** (sliding window). Correct for single-instance deployments; a
+  Redis-backed limiter is the production upgrade (noted in `docs/production.md`).
+- **PKI demo trust is synthetic.** Documents are signed by a locally generated demo CA. In
+  production the trust roots swap to the real DigiLocker/GSTN signing CAs (one config change;
+  see `docs/production.md`). The verification machinery (digest, chain, integrity, issuer-CN
+  matching) is exactly what runs against the real roots.
+- **Thresholds are demo defaults.** MSME caps, local-content classes and check weights live in
+  the editable rule set and are labeled for verification against current DPIIT/MSME/GeM policy
+  before production use.
 
 ---
 

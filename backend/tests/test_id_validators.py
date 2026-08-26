@@ -19,6 +19,48 @@ from app.core.id_validators import (
 # GSTIN
 # ---------------------------------------------------------------------------
 
+# Fixtures below are REAL GSTINs cited in public GSTN/APISetu write-ups —
+# they validate independently of this codebase (non-circular testing).
+REAL_VALID_GSTINS = [
+    "27AAPFU0939F1ZV",   # valid under Luhn mod 36 (external source)
+    "29AAGCB7383J1Z4",   # valid under Luhn mod 36 (external source)
+]
+
+
+def test_gstin_accepts_real_valid_gstins():
+    for gstin in REAL_VALID_GSTINS:
+        valid, reason = validate_gstin(gstin)
+        assert valid, f"{gstin}: {reason}"
+
+
+def test_gstin_rejects_bad_checksum_real_gstins():
+    # wrong check digit on the real fixtures above
+    assert not validate_gstin("27AAPFU0939F1ZX")[0]
+    assert not validate_gstin("29AAGCB7383J1ZZ")[0]
+    ok, reason = validate_gstin("27AAPFU0939F1ZX")
+    assert "checksum" in reason
+
+
+def test_gstin_rejects_checksum_from_old_fixed_weight_scheme():
+    """
+    Regression: the previous implementation used a fixed weight vector
+    [2,4,8,5,10,9,7,3,6,1,2,4,8,5] which is NOT the GSTN algorithm. Under
+    the real Luhn-mod-36 scheme the check digit of 07AAACG2115R1Z is J, so
+    the 'N' suffix (which the old scheme produced) must be rejected.
+    """
+    ok, reason = validate_gstin("07AAACG2115R1ZN")
+    assert not ok
+    assert "checksum" in reason
+
+
+def test_gstin_algorithm_derived_fixture():
+    """A self-consistent fixture derived from the corrected algorithm."""
+    first14 = "07AAACG2115R1Z"
+    checksum = gstin_checksum_char(first14)
+    assert checksum == "J"
+    assert validate_gstin(first14 + checksum)[0]
+
+
 def test_gstin_valid_structure_and_checksum():
     # construct a mathematically valid GSTIN via the algorithm itself
     first14 = "27AABCC1234C1Z"

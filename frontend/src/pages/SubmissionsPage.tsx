@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api, Submission, Tender } from "../api/client";
 import { Card, Empty, ErrorBox, RiskBadge, Spinner, ActionBadge } from "../components/ui";
+import CollusionPanel from "../components/CollusionPanel";
 
 export default function SubmissionsPage() {
   const { tenderId } = useParams();
@@ -50,6 +51,11 @@ export default function SubmissionsPage() {
       {error && <ErrorBox error={error} />}
       {!filtered && !error && <Spinner />}
       {filtered && filtered.length === 0 && <Empty message="No submissions match." />}
+      {tenderId && (
+        <div className="mb-4">
+          <CollusionPanel tenderId={Number(tenderId)} />
+        </div>
+      )}
       <div className="card overflow-x-auto p-0">
         <table className="w-full text-sm">
           <thead>

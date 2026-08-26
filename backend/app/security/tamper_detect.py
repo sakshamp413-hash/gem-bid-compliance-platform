@@ -1,18 +1,24 @@
 """
 PDF tamper / forgery detection (independent of signature validity).
 
-Signals analyzed (signature-aware — legitimate signing itself appends a
-revision and updates /ModDate, so comparisons are made against the
-signature's own recorded timestamp):
+Signals are split into HARD triggers (modification evidence) and SOFT
+indicators (forensic notes that never alone mark a document tampered):
 
-  1. revisions > 2                       → updates AFTER the signing revision
-  2. revisions > 1 with no valid sig     → rewritten after creation
-  3. /ModDate later than signature time  → metadata rewritten after signing
-  4. /ModDate vs /CreationDate mismatch  → (unsigned docs) metadata rewritten
-  5. Producer string anomalies           → re-saved/forged-tool fingerprints
-  6. object-stream usage                 → re-processed file fingerprint
+HARD (any one ⇒ `tampered=True`):
+  1. signature no longer covers the content (intact=False)
+  2. revisions appended AFTER the signing revision (revisions > 2)
+  3. /ModDate later than the signature timestamp (metadata rewritten after signing)
+  4. /ModDate ≠ /CreationDate on an UNSIGNED document
+  5. producer string matches a re-processing/forgery fingerprint
 
-Output: human-readable reasons + details, aggregated `tampered` boolean.
+SOFT (recorded in `details`/`soft_indicators` only — legitimate PDFs can
+exhibit them):
+  * object streams (normal in modern re-saved PDFs)
+  * missing /CreationDate
+  * unsigned document with multiple revisions
+
+This avoids flagging legitimate documents (e.g. object-stream PDFs) while
+still catching the seeded forgery with its three specific reasons.
 """
 from __future__ import annotations
 
@@ -82,10 +88,12 @@ def _extract_text_layer_heuristics(path: str | Path) -> dict[str, Any]:
 def analyze_pdf_tamper(path: str | Path, signature_report: dict[str, Any] | None = None) -> dict[str, Any]:
     """
     Returns:
-      {tampered: bool, summary: str, reasons: list[str], details: {...}}
+      {tampered: bool, summary: str, reasons: list[str],
+       soft_indicators: list[str], details: {...}}
     """
     path = Path(path)
-    reasons: list[str] = []
+    reasons: list[str] = []        # hard triggers
+    soft: list[str] = []           # informational only
     details: dict[str, Any] = {}
     raw = path.read_bytes()
 
@@ -97,15 +105,15 @@ def analyze_pdf_tamper(path: str | Path, signature_report: dict[str, Any] | None
     signed = bool(sig.get("signed"))
     intact = bool(sig.get("intact"))
 
+    if signed and not intact:
+        reasons.append("signature no longer covers the document content (modified after signing)")
     if signed and n_revisions > 2:
         reasons.append(
             f"document has {n_revisions} revisions — content was updated AFTER the signing "
             "revision was appended"
         )
-    if signed and not intact and n_revisions > 1:
-        reasons.append("signature no longer covers the document content (modified after signing)")
     if not signed and n_revisions > 1:
-        reasons.append(
+        soft.append(
             f"unsigned document has {n_revisions} revisions (incremental updates after creation)"
         )
 
@@ -136,7 +144,7 @@ def analyze_pdf_tamper(path: str | Path, signature_report: dict[str, Any] | None
                 "metadata rewritten after creation"
             )
         if not creation:
-            reasons.append("document metadata carries no /CreationDate")
+            soft.append("document metadata carries no /CreationDate")
 
     # --- 5. producer fingerprint ---
     producer = str(pdfinfo.get("producer", "") or "")
@@ -146,7 +154,7 @@ def analyze_pdf_tamper(path: str | Path, signature_report: dict[str, Any] | None
             f"document producer '{producer}' matches a re-processing/forgery fingerprint"
         )
 
-    # --- 6. structural anomalies via pikepdf ---
+    # --- structural notes (soft only: object streams are normal in modern PDFs) ---
     try:
         import pikepdf
 
@@ -155,23 +163,25 @@ def analyze_pdf_tamper(path: str | Path, signature_report: dict[str, Any] | None
             obj_streams = 0
             for obj in pdf.objects:
                 try:
-                    if obj is not None and obj.type_name == "/ObjStm":
+                    if obj is not None and obj.get("/Type") == pikepdf.Name("/ObjStm"):
                         obj_streams += 1
                 except Exception:
                     pass
             details["object_streams"] = obj_streams
             if obj_streams > 0:
-                reasons.append(
-                    f"file uses object streams ({obj_streams}) — typical of re-saved/processed files"
+                soft.append(
+                    f"file uses object streams ({obj_streams}) — "
+                    "normal in modern re-saved PDFs (informational)"
                 )
     except Exception as exc:
         details["pikepdf_error"] = str(exc)
-        reasons.append(f"structural analysis failed: {exc}")
+        soft.append(f"structural analysis failed: {exc}")
 
     tampered = len(reasons) > 0
     return {
         "tampered": tampered,
         "summary": "; ".join(reasons) if reasons else "no tamper indicators detected",
         "reasons": reasons,
+        "soft_indicators": soft,
         "details": details,
     }

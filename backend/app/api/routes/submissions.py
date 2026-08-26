@@ -125,3 +125,32 @@ def assess_submission(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Submission not found")
     run_verification(db, sub, actor=f"user:{user.id}")
     return get_submission(submission_id, user, db)
+
+
+@router.get("/{submission_id}/report.pdf")
+def submission_report_pdf(
+    submission_id: int,
+    _: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Officer-facing explainability report (PDF) for the procurement file."""
+    from fastapi.responses import Response
+
+    from app.services.report_service import build_report_pdf
+
+    sub = db.get(BidSubmission, submission_id)
+    if sub is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Submission not found")
+    try:
+        pdf = build_report_pdf(db, submission_id)
+    except Exception as exc:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, f"report render failed: {exc}")
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": (
+                f'inline; filename="compliance_report_submission_{submission_id}.pdf"'
+            ),
+        },
+    )

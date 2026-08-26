@@ -68,13 +68,16 @@ def check_pan(context) -> CheckOutput:
     add_evidence(out, source="portal", field="pan.name", value=str(pd.get("name", "")))
     add_evidence(out, source="portal", field="pan.status", value=str(pd.get("status", "")))
 
-    import rapidfuzz.fuzz as fuzz
+    from app.core.name_match import name_match
 
-    ratio = fuzz.ratio(str(pd.get("name", "")).upper(), str(bidder.legal_name or "").upper())
+    m = name_match(str(pd.get("name", "")), bidder.legal_name)
+    ratio = m["score"]
     if ratio < 80:
         add_evidence(
             out, source="portal", field="pan.name", value=str(pd.get("name", "")),
-            quote=f"name match ratio {ratio:.0f}% vs submitted legal name", note="rapidfuzz",
+            quote=f"name match ratio {ratio:.0f}% vs submitted legal name "
+                  f"(normalized: '{m['normalized_a']}' vs '{m['normalized_b']}')",
+            note="rapidfuzz over normalized names",
         )
         out.result = "flag"
         out.summary = f"ITD name '{pd.get('name')}' mismatches submitted legal name ({ratio:.0f}%)."

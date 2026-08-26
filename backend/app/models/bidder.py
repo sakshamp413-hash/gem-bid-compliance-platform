@@ -25,4 +25,6 @@ class Bidder(Base):
     esic_no: Mapped[str | None] = mapped_column(EncryptedString(64))
     startup_no: Mapped[str | None] = mapped_column(EncryptedString(64))
     nsic_no: Mapped[str | None] = mapped_column(EncryptedString(64))
+    bank_account: Mapped[str | None] = mapped_column(EncryptedString(64))
+    phone: Mapped[str | None] = mapped_column(EncryptedString(32))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

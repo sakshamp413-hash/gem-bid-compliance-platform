@@ -20,8 +20,6 @@ import re
 
 GSTIN_RE = re.compile(r"^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z][Z][0-9A-Z]$")
 _GSTIN_CHARSET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-# Public GSTN checksum weights (documented by GSTN / widely published).
-_GSTIN_WEIGHTS = [2, 4, 8, 5, 10, 9, 7, 3, 6, 1, 2, 4, 8, 5]
 
 
 def _gstin_char_value(ch: str) -> int:
@@ -31,17 +29,27 @@ def _gstin_char_value(ch: str) -> int:
 
 def gstin_checksum_char(first14: str) -> str:
     """
-    Compute the 15th (checksum) character of a GSTIN from its first 14.
+    GSTN check digit — the algorithm GSTN actually uses.
 
-    Public GSTN algorithm: sum of (char_value * weight) mod 36, index into
-    charset. Isolated here so it is unit-testable against known GSTINs.
+    Luhn mod 36 over the charset 0-9A-Z: iterate the first 14 characters from
+    right to left, double every second character (factor alternates 2,1,2,1…),
+    split the doubled value into digit-sum parts (value//36 + value%36),
+    accumulate, then the check digit is the character whose numeric value makes
+    the total divisible by 36.
+
+    Reference: GSTN 'GSTIN generation logic' (check digit as Luhn mod 36);
+    this is the scheme used by real GSTINs (e.g. 27AAPFU0939F1ZV).
     """
     if len(first14) != 14:
         raise ValueError("GSTIN checksum requires exactly 14 characters")
-    total = sum(
-        _gstin_char_value(ch) * w for ch, w in zip(first14.upper(), _GSTIN_WEIGHTS)
-    )
-    return _GSTIN_CHARSET[total % 36]
+    factor, total = 2, 0
+    for ch in reversed(first14.upper()):
+        cp = _gstin_char_value(ch)  # raises on invalid char — validate upstream
+        addend = factor * cp
+        factor = 1 if factor == 2 else 2
+        addend = (addend // 36) + (addend % 36)
+        total += addend
+    return _GSTIN_CHARSET[(36 - (total % 36)) % 36]
 
 
 def validate_gstin(gstin: str) -> tuple[bool, str]:

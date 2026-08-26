@@ -16,8 +16,7 @@ import datetime as dt
 import json
 from typing import Any
 
-import rapidfuzz.fuzz as fuzz
-
+from app.core.name_match import name_match
 from app.ai.llm import GROUNDING_SYSTEM_PROMPT, get_llm_client
 from app.core.logging import get_logger
 
@@ -79,20 +78,25 @@ def run_deterministic_cross_verify(payload: dict) -> dict[str, Any]:
         for doc_type, name, _ in names:
             if not name:
                 continue
-            ratio = fuzz.ratio(str(name).upper(), legal_name.upper())
+            m = name_match(name, legal_name)
+            ratio = m["score"]
             if ratio < 75:
                 add(_finding(
                     "high",
                     f"Legal name on {doc_type} ('{name}') differs from submitted legal name "
-                    f"'{legal_name}' (match {ratio:.0f}%).",
-                    [_ev(doc_type=doc_type, field="legal_name", value=name, quote=f"ratio {ratio:.0f}%")],
+                    f"'{legal_name}' (match {ratio:.0f}% after normalization: "
+                    f"'{m['normalized_a']}' vs '{m['normalized_b']}').",
+                    [_ev(doc_type=doc_type, field="legal_name", value=name,
+                         quote=f"ratio {ratio:.0f}% · normalized '{m['normalized_a']}'")],
                     "XVERIFY/name-consistency", 0.9,
                 ))
             else:
                 add(_finding(
                     "info",
-                    f"Name on {doc_type} consistent with submission ({ratio:.0f}%).",
-                    [_ev(doc_type=doc_type, field="legal_name", value=name)],
+                    f"Name on {doc_type} consistent with submission "
+                    f"({ratio:.0f}% after normalization).",
+                    [_ev(doc_type=doc_type, field="legal_name", value=name,
+                         quote=f"normalized '{m['normalized_a']}'")],
                     "XVERIFY/name-consistency", 0.95,
                 ))
 
@@ -140,14 +144,18 @@ def run_deterministic_cross_verify(payload: dict) -> dict[str, Any]:
     udyam_name = _clean(_doc_fields(payload, "udyam")).get("legal_name")
     pan_card_name = _clean(_doc_fields(payload, "pan_card")).get("name")
     if udyam_name and pan_card_name:
-        doc_ratio = fuzz.ratio(str(udyam_name).upper(), str(pan_card_name).upper())
+        m = name_match(udyam_name, pan_card_name)
+        doc_ratio = m["score"]
         if doc_ratio < 85:
             add(_finding(
                 "high",
                 f"PAN card name '{pan_card_name}' differs from Udyam certificate name "
-                f"'{udyam_name}' (match {doc_ratio:.0f}%) — identity documents conflict.",
-                [_ev(doc_type="pan_card", field="name", value=pan_card_name),
-                 _ev(doc_type="udyam", field="legal_name", value=udyam_name)],
+                f"'{udyam_name}' (match {doc_ratio:.0f}% after normalization: "
+                f"'{m['normalized_a']}' vs '{m['normalized_b']}') — identity documents conflict.",
+                [_ev(doc_type="pan_card", field="name", value=pan_card_name,
+                     quote=f"normalized '{m['normalized_b']}'"),
+                 _ev(doc_type="udyam", field="legal_name", value=udyam_name,
+                     quote=f"normalized '{m['normalized_a']}'")],
                 "XVERIFY/name-consistency", 0.92,
             ))
 
@@ -219,7 +227,7 @@ def run_deterministic_cross_verify(payload: dict) -> dict[str, Any]:
     for ctype, pres in (portal or {}).items():
         if isinstance(pres, dict) and pres.get("found") and pres.get("data"):
             nm = pres["data"].get("legal_name") or pres["data"].get("company_name") or pres["data"].get("name")
-            if nm and legal_name and fuzz.ratio(str(nm).upper(), legal_name.upper()) < 75:
+            if nm and legal_name and name_match(nm, legal_name)["score"] < 75:
                 add(_finding(
                     "high",
                     f"Registry '{ctype}' name '{nm}' differs from submitted legal name.",

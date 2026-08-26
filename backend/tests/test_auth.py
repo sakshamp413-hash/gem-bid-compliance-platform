@@ -75,3 +75,7 @@ def test_rate_limit_auth(client):
         if code == 429:
             break
     assert code == 429
+    # reset the shared limiter so other tests are not throttled
+    from app.api.deps import auth_limiter
+
+    auth_limiter._hits.clear()

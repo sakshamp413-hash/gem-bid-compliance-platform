@@ -148,6 +148,14 @@ const load = () => {
         <div className="flex gap-2">
           <button
             className="btn-outline"
+            onClick={() =>
+              api.downloadReport(Number(id)).catch((e) => setError(e instanceof Error ? e.message : String(e)))
+            }
+          >
+            ⬇ Download report (PDF)
+          </button>
+          <button
+            className="btn-outline"
             disabled={reassessing}
             onClick={async () => {
               setReassessing(true);

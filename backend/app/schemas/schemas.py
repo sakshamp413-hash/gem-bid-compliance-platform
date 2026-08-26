@@ -76,6 +76,9 @@ class BidderIn(BaseModel):
     esic_no: str | None = None
     startup_no: str | None = None
     nsic_no: str | None = None
+    bank_account: str | None = None
+    phone: str | None = None
+    is_reseller: bool = True
 
 
 class BidderOut(BidderIn):

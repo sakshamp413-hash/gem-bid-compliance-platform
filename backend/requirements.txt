@@ -19,6 +19,7 @@ pypdf==6.16.2          # PDF parsing + incremental-update forge simulation
 pdfplumber==0.11.10    # text layer extraction / word coordinates
 reportlab==5.0.1       # demo document rendering (dataset generator)
 RapidFuzz==3.14.5      # fuzzy name matching
+indic-transliteration==2.3.82  # Devanagari→Latin for entity-name matching
 PyYAML==6.0.3          # rule set (rules are data)
 httpx==0.28.1          # LLM API calls + tests
 # Optional AI/OCR extras (graceful degradation when absent):

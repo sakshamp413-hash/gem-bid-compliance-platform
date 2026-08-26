@@ -57,6 +57,8 @@ BIDDER_DOCS = {
     "fraud": ["udyam", "gst_cert", "pan_card", "oem_auth", "local_content"],
     "kaveri": ["udyam", "gst_cert", "pan_card", "startup", "local_content"],
     "southern": ["udyam", "gst_cert", "pan_card", "cin", "local_content"],
+    "frontrunner": ["udyam", "gst_cert", "pan_card", "oem_auth", "local_content"],
+    "quickspares": ["udyam", "gst_cert", "pan_card", "oem_auth", "local_content"],
 }
 
 

@@ -59,16 +59,20 @@ def make_pan(first3: str, entity_char: str, name_first: str, digits: str = "1234
 
 def build_portal_data() -> dict:
     # --- identifiers -------------------------------------------------------
-    clean_pan = make_pan("AAB", "C", "C")          # CleanCorp — company
+    clean_pan = make_pan("AAB", "C", "C")          # CleanCorp - company
     clean_gstin = make_gstin("27", clean_pan)      # Maharashtra
-    border_pan = make_pan("AAV", "F", "B")         # BorderlineTraders — firm
+    border_pan = make_pan("AAV", "F", "B")         # BorderlineTraders - firm
     border_gstin = make_gstin("33", border_pan)    # Tamil Nadu
-    fraud_pan = make_pan("AAB", "F", "F")          # FraudFillers — firm
+    fraud_pan = make_pan("AAB", "F", "F")          # FraudFillers - firm
     fraud_gstin = make_gstin("27", fraud_pan)      # Maharashtra
-    kaveri_pan = make_pan("AAK", "F", "K")         # Kaveri — firm
+    kaveri_pan = make_pan("AAK", "F", "K")         # Kaveri - firm
     kaveri_gstin = make_gstin("29", kaveri_pan)    # Karnataka
-    southern_pan = make_pan("AAP", "C", "S")       # Southern Pumps LLP — company-type
+    southern_pan = make_pan("AAP", "C", "S")       # Southern Pumps LLP - company-type
     southern_gstin = make_gstin("33", southern_pan)
+    front_pan = make_pan("AAF", "C", "F")          # FrontRunner - company
+    front_gstin = make_gstin("27", front_pan)
+    quick_pan = make_pan("AAQ", "F", "Q")          # QuickSpares - firm
+    quick_gstin = make_gstin("29", quick_pan)
 
     today = date.today()
 
@@ -132,6 +136,28 @@ def build_portal_data() -> dict:
                 "status": "Active",
                 "issued_on": d(2022, 9, 30),
             },
+            "UDYAM-MH-27-0003141": {
+                "legal_name": "FrontRunner Pumps Pvt. Ltd.",
+                "trade_name": "FrontRunner",
+                "pan": front_pan,
+                "classification": "Small",
+                "sector": "services",
+                "investment_crore": 2.0,
+                "turnover_crore": 12.0,
+                "status": "Active",
+                "issued_on": d(2023, 8, 10),
+            },
+            "UDYAM-KA-01-0007159": {
+                "legal_name": "QuickSpares Trading Co.",
+                "trade_name": "QuickSpares",
+                "pan": quick_pan,
+                "classification": "Micro",
+                "sector": "services",
+                "investment_crore": 0.6,
+                "turnover_crore": 1.8,
+                "status": "Active",
+                "issued_on": d(2022, 12, 5),
+            },
         },
         "gstin": {
             clean_gstin: {
@@ -164,6 +190,18 @@ def build_portal_data() -> dict:
                 "status": "Active",
                 "returns": {"latest": {"status": "filed", "period": "Q2 FY 2025-26", "filed_on": d(2025, 8, 2)}},
             },
+            front_gstin: {
+                "legal_name": "FrontRunner Pumps Pvt. Ltd.",
+                "trade_name": "FrontRunner",
+                "status": "Active",
+                "returns": {"latest": {"status": "filed", "period": "Q2 FY 2025-26", "filed_on": d(2025, 8, 10)}},
+            },
+            quick_gstin: {
+                "legal_name": "QuickSpares Trading Co.",
+                "trade_name": "QuickSpares",
+                "status": "Active",
+                "returns": {"latest": {"status": "filed", "period": "Q2 FY 2025-26", "filed_on": d(2025, 7, 28)}},
+            },
         },
         "pan": {
             clean_pan: {"name": "CleanCorp Industrial Solutions Pvt. Ltd.", "status": "PAN valid"},
@@ -171,6 +209,8 @@ def build_portal_data() -> dict:
             fraud_pan: {"name": "FraudFillers Traders", "status": "PAN valid"},
             kaveri_pan: {"name": "Kaveri Engineering Works", "status": "PAN valid"},
             southern_pan: {"name": "Southern Pumps LLP", "status": "PAN valid"},
+            front_pan: {"name": "FrontRunner Pumps Pvt. Ltd.", "status": "PAN valid"},
+            quick_pan: {"name": "QuickSpares Trading Co.", "status": "PAN valid"},
         },
         "mca": {
             "U12345MH2023PLC123456": {
@@ -228,10 +268,6 @@ def build_portal_data() -> dict:
     }
     return data
 
-
-# --------------------------------------------------------------------------
-# PDF rendering (reportlab)
-# --------------------------------------------------------------------------
 
 STYLES = {
     "title": ParagraphStyle("title", fontName="Helvetica-Bold", fontSize=13, leading=17,
@@ -450,7 +486,9 @@ def build_docs(bidder_key: str) -> dict[str, bytes]:
                 [
                     ("Item", "Industrial centrifugal pumps (CP-100)"),
                     ("Declared Class", "I"),
-                    ("Claimed Local Content (%)", "62%"),
+                    ("Total Value (Rs. Lakh)", "100.0"),
+                    ("Imported Content Value (Rs. Lakh)", "30.0"),
+                    ("Claimed Local Content (%)", "70%"),
                     ("Date of Certification", today.isoformat()),
                     ("Declared By", "CleanCorp Industrial Solutions Pvt. Ltd."),
                 ],
@@ -557,7 +595,9 @@ def build_docs(bidder_key: str) -> dict[str, bytes]:
                 [
                     ("Item", "Industrial submersible pumps"),
                     ("Declared Class", "I"),
-                    ("Claimed Local Content (%)", "55%"),
+                    ("Total Value (Rs. Lakh)", "50.0"),
+                    ("Imported Content Value (Rs. Lakh)", "20.0"),
+                    ("Claimed Local Content (%)", "60%"),
                     ("Date of Certification", today.isoformat()),
                     ("Declared By", "Borderline Traders"),
                 ],
@@ -631,7 +671,9 @@ def build_docs(bidder_key: str) -> dict[str, bytes]:
                 [
                     ("Item", "Industrial high-pressure pumps"),
                     ("Declared Class", "I"),
-                    ("Claimed Local Content (%)", "35%"),   # ← below Class I threshold
+                    ("Total Value (Rs. Lakh)", "40.0"),
+                    ("Imported Content Value (Rs. Lakh)", "30.0"),
+                    ("Claimed Local Content (%)", "25%"),   # ← below Class I threshold
                     ("Date of Certification", today.isoformat()),
                     ("Declared By", "FraudFillers Traders"),
                 ],
@@ -698,8 +740,10 @@ def build_docs(bidder_key: str) -> dict[str, bytes]:
                 "As per DPIIT Public Procurement (Preference to Make in India) Order",
                 [
                     ("Item", "Industrial pump spares"),
-                    ("Declared Class", "II"),
-                    ("Claimed Local Content (%)", "30%"),
+                    ("Declared Class", "I"),
+                    ("Total Value (Rs. Lakh)", "100.0"),
+                    ("Imported Content Value (Rs. Lakh)", "30.0"),
+                    ("Claimed Local Content (%)", "70%"),
                     ("Date of Certification", today.isoformat()),
                     ("Declared By", "Kaveri Engineering Works"),
                 ],
@@ -768,11 +812,156 @@ def build_docs(bidder_key: str) -> dict[str, bytes]:
                 [
                     ("Item", "Industrial pumps — complete range"),
                     ("Declared Class", "I"),
-                    ("Claimed Local Content (%)", "58%"),
+                    ("Total Value (Rs. Lakh)", "120.0"),
+                    ("Imported Content Value (Rs. Lakh)", "40.0"),
+                    ("Claimed Local Content (%)", "67%"),
                     ("Date of Certification", today.isoformat()),
                     ("Declared By", "Southern Pumps LLP"),
                 ],
                 "Self-certification — subject to verification."),
+        }
+
+
+    if bidder_key == "frontrunner":
+        pan = make_pan("AAF", "C", "F")
+        gstin = make_gstin("27", pan)
+        return {
+            "udyam": render_cert(
+                "Udyam Registration Certificate",
+                "Government of India - Ministry of Micro, Small & Medium Enterprises",
+                [
+                    ("Udyam Registration Number", "UDYAM-MH-27-0003141"),
+                    ("Legal Name of Enterprise", "FrontRunner Pumps Pvt. Ltd."),
+                    ("Trade Name", "FrontRunner"),
+                    ("PAN", pan),
+                    ("Type of Enterprise", "Private Limited Company"),
+                    ("Sector", "Services"),
+                    ("Classification", "Small"),
+                    ("Investment (Rs crore)", "2.0"),
+                    ("Turnover (Rs crore)", "12.0"),
+                    ("Date of Issue", "2023-08-10"),
+                    ("Address", "91 Powai Plaza, Mumbai 400076"),
+                ],
+                "Digitally signed."),
+            "gst_cert": render_cert(
+                "Goods and Services Tax Registration Certificate",
+                "Government of India - GSTN (Provisional)",
+                [
+                    ("GSTIN", gstin),
+                    ("Legal Name", "FrontRunner Pumps Pvt. Ltd."),
+                    ("Trade Name", "FrontRunner"),
+                    ("Registration Status", "Active"),
+                    ("Date of Registration", "2023-08-25"),
+                    ("Address", "91 Powai Plaza, Mumbai 400076"),
+                    ("Principal Place of Business", "Maharashtra (27)"),
+                ],
+                "Digitally signed."),
+            "pan_card": render_cert(
+                "Permanent Account Number (PAN) Card",
+                "Income Tax Department, Government of India",
+                [
+                    ("PAN", pan),
+                    ("Name", "FrontRunner Pumps Pvt. Ltd."),
+                    ("Father/Spouse Name", "N/A"),
+                    ("Date of Issue", "2023-08-02"),
+                    ("Status", "Valid"),
+                ],
+                "Digitally signed."),
+            "oem_auth": render_letter(
+                "OEM Authorisation Letter",
+                [
+                    "To Whom It May Concern,",
+                    "We, <b>TurbineFlow Systems Ltd.</b> (OEM), hereby authorise "
+                    "<b>FrontRunner Pumps Pvt. Ltd.</b> as our authorised distributor for "
+                    "supply of industrial pumps to GeM buyers.",
+                    "Item Description: Industrial turbine pumps, 10HP-100HP.",
+                    "This authorisation is valid from 2025-01-01 to 2028-12-31.",
+                ],
+                "K. Verma, Regional Manager, TurbineFlow Systems Ltd."),
+            "local_content": render_cert(
+                "Make in India - Local Content Self-Certification",
+                "As per DPIIT Public Procurement (Preference to Make in India) Order",
+                [
+                    ("Item", "Industrial turbine pumps"),
+                    ("Declared Class", "I"),
+                    ("Total Value (Rs. Lakh)", "80.0"),
+                    ("Imported Content Value (Rs. Lakh)", "25.0"),
+                    ("Claimed Local Content (%)", "69%"),
+                    ("Date of Certification", today.isoformat()),
+                    ("Declared By", "FrontRunner Pumps Pvt. Ltd."),
+                ],
+                "Self-certification - subject to verification."),
+        }
+
+    if bidder_key == "quickspares":
+        pan = make_pan("AAQ", "F", "Q")
+        gstin = make_gstin("29", pan)
+        return {
+            "udyam": render_cert(
+                "Udyam Registration Certificate",
+                "Government of India - Ministry of Micro, Small & Medium Enterprises",
+                [
+                    ("Udyam Registration Number", "UDYAM-KA-01-0007159"),
+                    ("Legal Name of Enterprise", "QuickSpares Trading Co."),
+                    ("Trade Name", "QuickSpares"),
+                    ("PAN", pan),
+                    ("Type of Enterprise", "Partnership Firm"),
+                    ("Sector", "Services"),
+                    ("Classification", "Micro"),
+                    ("Investment (Rs crore)", "0.6"),
+                    ("Turnover (Rs crore)", "1.8"),
+                    ("Date of Issue", "2022-12-05"),
+                    ("Address", "33 MG Road, Bengaluru 560001"),
+                ],
+                "Digitally signed."),
+            "gst_cert": render_cert(
+                "Goods and Services Tax Registration Certificate",
+                "Government of India - GSTN (Provisional)",
+                [
+                    ("GSTIN", gstin),
+                    ("Legal Name", "QuickSpares Trading Co."),
+                    ("Trade Name", "QuickSpares"),
+                    ("Registration Status", "Active"),
+                    ("Date of Registration", "2022-12-20"),
+                    ("Address", "33 MG Road, Bengaluru 560001"),
+                    ("Principal Place of Business", "Karnataka (29)"),
+                ],
+                "Digitally signed."),
+            "pan_card": render_cert(
+                "Permanent Account Number (PAN) Card",
+                "Income Tax Department, Government of India",
+                [
+                    ("PAN", pan),
+                    ("Name", "QuickSpares Trading Co."),
+                    ("Father/Spouse Name", "N/A"),
+                    ("Date of Issue", "2022-11-25"),
+                    ("Status", "Valid"),
+                ],
+                "Digitally signed."),
+            "oem_auth": render_letter(
+                "OEM Authorisation Letter",
+                [
+                    "To Whom It May Concern,",
+                    "We, <b>PrimeFlow Systems Ltd.</b> (OEM), hereby authorise "
+                    "<b>QuickSpares Trading Co.</b> as our authorised dealer for supply of "
+                    "industrial pumps to GeM buyers.",
+                    "Item Description: Industrial turbine pumps, 10HP-100HP.",
+                    "This authorisation is valid from 2025-02-01 to 2028-01-31.",
+                ],
+                "K. Verma, Regional Manager, PrimeFlow Systems Ltd."),
+            "local_content": render_cert(
+                "Make in India - Local Content Self-Certification",
+                "As per DPIIT Public Procurement (Preference to Make in India) Order",
+                [
+                    ("Item", "Industrial turbine pumps"),
+                    ("Declared Class", "I"),
+                    ("Total Value (Rs. Lakh)", "90.0"),
+                    ("Imported Content Value (Rs. Lakh)", "40.0"),
+                    ("Claimed Local Content (%)", "56%"),
+                    ("Date of Certification", today.isoformat()),
+                    ("Declared By", "QuickSpares Trading Co."),
+                ],
+                "Self-certification - subject to verification."),
         }
 
     raise KeyError(bidder_key)
@@ -783,6 +972,8 @@ BIDDERS = {
         "legal_name": "CleanCorp Industrial Solutions Pvt. Ltd.",
         "entity_type": "private_limited",
         "is_reseller": True,
+        "bank_account": "HDFC00123456789",
+        "phone": "+91 98200 10001",
         "pan": make_pan("AAB", "C", "C"),
         "gstin": make_gstin("27", make_pan("AAB", "C", "C")),
         "udyam_no": "UDYAM-MH-27-0001234",
@@ -796,6 +987,8 @@ BIDDERS = {
         "legal_name": "Borderline Traders",
         "entity_type": "partnership",
         "is_reseller": True,
+        "bank_account": "ICICI00234567890",
+        "phone": "+91 98410 20002",
         "pan": make_pan("AAV", "F", "B"),
         "gstin": make_gstin("33", make_pan("AAV", "F", "B")),
         "udyam_no": "UDYAM-TN-02-0005678",
@@ -809,6 +1002,8 @@ BIDDERS = {
         "legal_name": "FraudFillers Traders",
         "entity_type": "partnership",
         "is_reseller": True,
+        "bank_account": "SBI00345678901",
+        "phone": "+91 98200 30003",
         "pan": make_pan("AAB", "F", "F"),
         "gstin": make_gstin("27", make_pan("AAB", "F", "F")),
         "udyam_no": "UDYAM-MH-27-0009876",
@@ -822,6 +1017,8 @@ BIDDERS = {
         "legal_name": "Kaveri Engineering Works",
         "entity_type": "partnership",
         "is_reseller": False,
+        "bank_account": "CANARA00456789012",
+        "phone": "+91 98860 40004",
         "pan": make_pan("AAK", "F", "K"),
         "gstin": make_gstin("29", make_pan("AAK", "F", "K")),
         "udyam_no": "UDYAM-KA-01-0002468",
@@ -835,6 +1032,8 @@ BIDDERS = {
         "legal_name": "Southern Pumps LLP",
         "entity_type": "llp",
         "is_reseller": False,
+        "bank_account": "AXIS00567890123",
+        "phone": "+91 98410 50005",
         "pan": make_pan("AAP", "C", "S"),
         "gstin": make_gstin("33", make_pan("AAP", "C", "S")),
         "udyam_no": "UDYAM-TN-04-0001357",
@@ -844,8 +1043,37 @@ BIDDERS = {
         "startup_no": None,
         "nsic_no": None,
     },
+    "frontrunner": {
+        "legal_name": "FrontRunner Pumps Pvt. Ltd.",
+        "entity_type": "private_limited",
+        "is_reseller": True,
+        "pan": make_pan("AAF", "C", "F"),
+        "gstin": make_gstin("27", make_pan("AAF", "C", "F")),
+        "udyam_no": "UDYAM-MH-27-0003141",
+        "cin": None,
+        "epfo_no": None,
+        "esic_no": None,
+        "startup_no": None,
+        "nsic_no": None,
+        "bank_account": "HDFC50200012345678",
+        "phone": "+91 98220 61001",
+    },
+    "quickspares": {
+        "legal_name": "QuickSpares Trading Co.",
+        "entity_type": "partnership",
+        "is_reseller": True,
+        "pan": make_pan("AAQ", "F", "Q"),
+        "gstin": make_gstin("29", make_pan("AAQ", "F", "Q")),
+        "udyam_no": "UDYAM-KA-01-0007159",
+        "cin": None,
+        "epfo_no": None,
+        "esic_no": None,
+        "startup_no": None,
+        "nsic_no": None,
+        "bank_account": "HDFC50200012345678",
+        "phone": "+91 98450 72002",
+    },
 }
-
 TENDER = {
     "gem_ref": "GEM/2026/B/1234567",
     "title": "Supply of Industrial Pumps",
