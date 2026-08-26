@@ -1,0 +1,26 @@
+# Core runtime dependencies (Python 3.11)
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+pydantic==2.13.4
+pydantic-settings==2.15.0
+SQLAlchemy==2.0.52
+psycopg2-binary==2.9.12
+alembic==1.19.1
+PyJWT==2.13.0
+passlib==1.7.4
+bcrypt==4.0.1          # pinned: passlib <-> bcrypt 4.1 incompatibility
+python-multipart==0.0.32
+email-validator==2.3.0
+cryptography==50.0.1
+pyHanko==0.36.2        # PKI signature verification (DigiLocker-style)
+pyhanko-certvalidator==0.31.4
+pikepdf==10.12.0       # PDF structure analysis
+pypdf==6.16.2          # PDF parsing + incremental-update forge simulation
+pdfplumber==0.11.10    # text layer extraction / word coordinates
+reportlab==5.0.1       # demo document rendering (dataset generator)
+RapidFuzz==3.14.5      # fuzzy name matching
+PyYAML==6.0.3          # rule set (rules are data)
+httpx==0.28.1          # LLM API calls + tests
+# Optional AI/OCR extras (graceful degradation when absent):
+# paddleocr            # heavy OCR engine (optional)
+# pytesseract          # Tesseract fallback (optional)

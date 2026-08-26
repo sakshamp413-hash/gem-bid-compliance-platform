@@ -1,0 +1,93 @@
+# ------------------------------------------------------------------
+# Compliance rule set — RULES ARE DATA, NOT CODE.
+#
+# Every threshold below is CONFIGURABLE and labeled for verification
+# against current policy before production use. The platform reads all
+# thresholds from this file (editable in the Admin UI); nothing is
+# hardcoded in the check modules.
+#
+# IMPORTANT: figures are demo defaults — verify against current
+# DPIIT / MSME / GeM / GSTN policy before production deployment.
+# ------------------------------------------------------------------
+version: 1
+
+meta:
+  last_reviewed: "2026-01-01"
+  review_note: >
+    Demo defaults. Confirm MSME classification caps, local-content
+    class thresholds and weightages with the sponsoring department
+    before production use.
+
+# --- MSME classification (as per MSMED Act / DPIIT notifications) ---
+msme:
+  classification:
+    manufacturing:
+      micro:  {investment_crore: 1.0,  turnover_crore: 5.0}
+      small:  {investment_crore: 10.0, turnover_crore: 50.0}
+      medium: {investment_crore: 50.0, turnover_crore: 250.0}
+    services:
+      micro:  {investment_crore: 1.0,  turnover_crore: 5.0}
+      small:  {investment_crore: 10.0, turnover_crore: 50.0}
+      medium: {investment_crore: 50.0, turnover_crore: 250.0}
+  note: "configurable — verify against current DPIIT MSME caps"
+
+# --- Make-in-India local content classes (GeM PPP-MII) ---
+local_content:
+  class_i_min_percent: 50.0     # Class I: >= 50%
+  class_ii_min_percent: 20.0    # Class II: 20% – 50%
+  class_ii_max_percent: 50.0
+  note: "configurable — verify against current DPIIT Public Procurement (Preference to Make in India) Order"
+
+# --- GST ---
+gst:
+  return_grace_period_months: 2        # months of unfiled returns tolerated
+  cancelled_status: ["Cancelled", "cancelled", "CANCEL"]  # statuses treated as hard fail
+
+# --- OEM authorization ---
+oem:
+  max_validity_years: 2
+  note: "authorization letter older than this is flagged"
+
+# --- Debarment / blacklist ---
+blacklist:
+  fuzzy_threshold: 85          # rapidfuzz ratio % treated as a match
+  hard_fail: true
+
+# --- Check weights (weighted scoring, Section 9) ---
+weights:
+  udyam: 10
+  gst: 15
+  pan: 15
+  mca: 10
+  local_content: 15
+  epfo: 5
+  esic: 5
+  startup: 5
+  nsic: 5
+  oem: 10
+  digilocker: 10
+  blacklist: 15
+
+# --- Hard-fail gates: a `fail` in any of these caps the assessment ---
+hard_fail_checks:
+  - blacklist
+  - digilocker
+
+# --- Scoring / risk bands ---
+scoring:
+  flag_ratio: 0.5              # a flagged check contributes half credit
+  hard_fail_score_cap: 25.0    # score capped when a hard-fail triggers
+  risk:
+    low:    {max_score: 80.0}
+    medium: {max_score: 95.0}
+    high:   {min_score: 95.0}  # > any flag/fail/hard-fail raises to high
+  recommendation_confidence_threshold: 0.6  # below → route to human review
+
+# --- Applicability ---
+applicability:
+  oem_required_doc_types: ["oem_auth"]
+  epfo_esic_trigger: ["epfo_no", "esic_no"]   # apply when bidder declares codes
+  local_content_trigger: ["local_content"]    # apply when bidder claims LC
+  startup_trigger: ["startup_no"]
+  nsic_trigger: ["nsic_no"]
+  mca_trigger: ["cin"]
