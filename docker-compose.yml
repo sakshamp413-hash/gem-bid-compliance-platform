@@ -1,0 +1,56 @@
+name: gem-compliance
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: gem
+      POSTGRES_PASSWORD: gem
+      POSTGRES_DB: gem
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gem"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://gem:gem@db:5432/gem
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production-32bytes+}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+      PORTAL_ADAPTER: ${PORTAL_ADAPTER:-mock}
+      LLM_PROVIDER: ${LLM_PROVIDER:-offline}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      CORS_ORIGINS: http://localhost:8080
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - certs:/app/storage/certs
+      - docs_storage:/app/storage/documents
+    command: >
+      sh -c "alembic upgrade head &&
+             python /app/data/generate.py &&
+             python -m app.seed &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  pgdata:
+  certs:
+  docs_storage:

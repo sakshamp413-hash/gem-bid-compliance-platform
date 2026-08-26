@@ -1,0 +1,27 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+backend/storage/app.db
+backend/storage/documents/*
+backend/storage/certs/*
+!backend/storage/certs/.gitkeep
+backend/.pytest_cache/
+.pytest_cache/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+
+# Env & IDE
+.env
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
