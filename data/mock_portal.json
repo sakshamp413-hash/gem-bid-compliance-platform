@@ -1,0 +1,218 @@
+{
+  "udyam": {
+    "UDYAM-MH-27-0001234": {
+      "legal_name": "CleanCorp Industrial Solutions Pvt. Ltd.",
+      "trade_name": "CleanCorp",
+      "pan": "AABCC1234K",
+      "classification": "Small",
+      "sector": "manufacturing",
+      "investment_crore": 2.4,
+      "turnover_crore": 18.5,
+      "status": "Active",
+      "issued_on": "2023-04-12"
+    },
+    "UDYAM-TN-02-0005678": {
+      "legal_name": "Borderline Traders",
+      "trade_name": "BorderlineTraders",
+      "pan": "AAVFB1234K",
+      "classification": "Micro",
+      "sector": "services",
+      "investment_crore": 0.4,
+      "turnover_crore": 1.2,
+      "status": "Active",
+      "issued_on": "2022-11-02"
+    },
+    "UDYAM-MH-27-0009876": {
+      "legal_name": "FraudFillers Traders",
+      "trade_name": "FraudFillers",
+      "pan": "AABFF1234K",
+      "classification": "Small",
+      "sector": "services",
+      "investment_crore": 1.1,
+      "turnover_crore": 9.0,
+      "status": "Active",
+      "issued_on": "2023-01-20"
+    },
+    "UDYAM-KA-01-0002468": {
+      "legal_name": "Kaveri Engineering Works",
+      "trade_name": "Kaveri Engg",
+      "pan": "AAKFK1234K",
+      "classification": "Micro",
+      "sector": "manufacturing",
+      "investment_crore": 0.3,
+      "turnover_crore": 0.9,
+      "status": "Active",
+      "issued_on": "2021-06-15"
+    },
+    "UDYAM-TN-04-0001357": {
+      "legal_name": "Southern Pumps LLP",
+      "trade_name": "Southern Pumps",
+      "pan": "AAPCS1234K",
+      "classification": "Small",
+      "sector": "manufacturing",
+      "investment_crore": 3.0,
+      "turnover_crore": 22.0,
+      "status": "Active",
+      "issued_on": "2022-09-30"
+    }
+  },
+  "gstin": {
+    "27AABCC1234K1ZX": {
+      "legal_name": "CleanCorp Industrial Solutions Pvt. Ltd.",
+      "trade_name": "CleanCorp",
+      "status": "Active",
+      "returns": {
+        "latest": {
+          "status": "filed",
+          "period": "Q2 FY 2025-26",
+          "filed_on": "2025-08-15"
+        }
+      }
+    },
+    "33AAVFB1234K1ZN": {
+      "legal_name": "Borderline Traders",
+      "trade_name": "BorderlineTraders",
+      "status": "Active",
+      "returns": {
+        "latest": {
+          "status": "not filed",
+          "period": "Q3 FY 2025-26",
+          "filed_on": null
+        }
+      }
+    },
+    "27AABFF1234K1Z9": {
+      "legal_name": "FraudFillers Traders",
+      "trade_name": "FraudFillers",
+      "status": "Cancelled",
+      "returns": {
+        "latest": {
+          "status": "not filed",
+          "period": "Q1 FY 2024-25",
+          "filed_on": null
+        }
+      }
+    },
+    "29AAKFK1234K1ZY": {
+      "legal_name": "Kaveri Engineering Works",
+      "trade_name": "Kaveri Engg",
+      "status": "Active",
+      "returns": {
+        "latest": {
+          "status": "filed",
+          "period": "Q2 FY 2025-26",
+          "filed_on": "2025-07-20"
+        }
+      }
+    },
+    "33AAPCS1234K1ZJ": {
+      "legal_name": "Southern Pumps LLP",
+      "trade_name": "Southern Pumps",
+      "status": "Active",
+      "returns": {
+        "latest": {
+          "status": "filed",
+          "period": "Q2 FY 2025-26",
+          "filed_on": "2025-08-02"
+        }
+      }
+    }
+  },
+  "pan": {
+    "AABCC1234K": {
+      "name": "CleanCorp Industrial Solutions Pvt. Ltd.",
+      "status": "PAN valid"
+    },
+    "AAVFB1234K": {
+      "name": "Borderline Traders",
+      "status": "PAN valid"
+    },
+    "AABFF1234K": {
+      "name": "FraudFillers Traders",
+      "status": "PAN valid"
+    },
+    "AAKFK1234K": {
+      "name": "Kaveri Engineering Works",
+      "status": "PAN valid"
+    },
+    "AAPCS1234K": {
+      "name": "Southern Pumps LLP",
+      "status": "PAN valid"
+    }
+  },
+  "mca": {
+    "U12345MH2023PLC123456": {
+      "company_name": "CleanCorp Industrial Solutions Pvt. Ltd.",
+      "status": "Active",
+      "date_of_incorporation": "2023-03-10"
+    },
+    "U54321TN2019PTC654321": {
+      "company_name": "FraudFillers Traders Pvt. Ltd.",
+      "status": "Active",
+      "date_of_incorporation": "2019-07-25"
+    },
+    "U11223TN2021NPL987654": {
+      "company_name": "Southern Pumps LLP",
+      "status": "Active",
+      "date_of_incorporation": "2021-05-05"
+    }
+  },
+  "epfo": {
+    "MH/12345/00678": {
+      "establishment_name": "CleanCorp Industrial Solutions Pvt. Ltd.",
+      "status": "Active"
+    },
+    "TN/45678/00321": {
+      "establishment_name": "Borderline Traders",
+      "status": "Active"
+    }
+  },
+  "esic": {
+    "2712345678": {
+      "establishment_name": "CleanCorp Industrial Solutions Pvt. Ltd.",
+      "status": "Active"
+    }
+  },
+  "startup": {
+    "DIPP12345678": {
+      "startup_name": "CleanCorp Industrial Solutions Pvt. Ltd.",
+      "status": "Active",
+      "valid_until": "2030-03-10"
+    },
+    "DIPP87654321": {
+      "startup_name": "Kaveri Engineering Works",
+      "status": "Active",
+      "valid_until": "2025-01-01"
+    }
+  },
+  "nsic": {
+    "NSIC12345678": {
+      "unit_name": "CleanCorp Industrial Solutions Pvt. Ltd.",
+      "status": "Active",
+      "monetary_limit": "Rs. 5,00,00,000"
+    }
+  },
+  "digilocker": {
+    "clean://gst/cert/1": {
+      "issued_to": "AABCC1234K",
+      "doc": "gst_cert",
+      "valid": true
+    }
+  },
+  "blacklist": [
+    {
+      "name": "FraudFillers Traders",
+      "pan": "AABFF1234K",
+      "period": "2025-03-15 to 2027-03-14",
+      "source": "GeM banned vendor list / CPPP debarment",
+      "reason": "Submission of forged statutory documents in prior tenders"
+    },
+    {
+      "name": "Sharma & Sons Traders",
+      "pan": "AABSS1234K",
+      "period": "2024-06-01 to 2026-05-31",
+      "source": "CPPP debarment",
+      "reason": "Collusive bidding"
+    }
+  ]
+}
