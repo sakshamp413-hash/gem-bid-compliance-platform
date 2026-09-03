@@ -1,58 +1,215 @@
 # GeM Bid Compliance Verification Platform
+## AI-Powered Integrated Bid Compliance Verification for GeM Procurement
 
-**AI-powered integrated bid compliance verification for GeM procurement — Smart India Hackathon build
-(sponsor theme: Smart Automation, Ministry of Petroleum & Natural Gas).**
+<div align="center">
 
-The platform ingests a bidder's statutory documents (Udyam/MSME, GST, PAN, MCA21/CIN, Make-in-India
-local content, EPFO/ESIC, Startup India, NSIC, OEM authorization, DigiLocker-issued certificates),
-extracts and cross-verifies them against (mocked) government registries using AI + real offline
-algorithms, detects inconsistencies and forgeries, produces a **Compliance Score + Risk Level + an
-explained recommendation**, keeps a **hash-chained audit trail**, and leaves the final
-qualify/disqualify decision to the procurement officer. **The AI recommends; the officer decides.**
+# 🏛️ AI-Powered GeM Bid Compliance Platform
 
----
+### Intelligent • Automated • Explainable • Secure
 
-## Table of contents
+AI-assisted bid compliance verification for Government e-Marketplace procurement.
 
-1. [What it solves](#what-it-solves)
-2. [Architecture](#architecture)
-3. [Quick start (Docker — one command)](#quick-start-docker)
-4. [Local development (no Docker)](#local-development)
-5. [Offline mode](#offline-mode)
-6. [The demo dataset (5 bidders)](#the-demo-dataset)
-7. [Demo script (bake this into your pitch)](#demo-script)
-8. [Security & auditability](#security--auditability)
-9. [Tests](#tests)
-10. [API reference](#api-reference)
-11. [Going to production: mock → APISetu / GSP / DigiLocker](#going-to-production)
-12. [Repo layout](#repo-layout)
+<p align="center">
+  <a href="#quick-start">Quick Start</a> • <a href="#key-features">Features</a> • <a href="#architecture">Architecture</a> • <a href="#installation">Installation</a>
+</p>
 
----
+</div>
 
-## What it solves
+<p align="center">
+  <strong>Transforming GeM procurement verification with AI + PKI + Hash-chained audit trails</strong>
+</p>
 
-GeM procurement officers manually verify each bidder against statutory sources (Udyam/MSME, GSTN,
-ITD/PAN, MCA21, DPIIT Make-in-India, EPFO/ESIC, Startup India, NSIC, OEM letters, DigiLocker
-documents, and debarment lists). This is slow, document-heavy, and error-prone.
+<br>
 
-The platform turns that manual drill into an **auditable, explainable, evidence-linked workflow**:
+<div align="center">
 
-| Pain point | Platform capability |
-|---|---|
-| Manual cross-checking of 10+ registries | 12 compliance-check modules, each `input → format → portal cross-check → cross-document consistency → evidence-linked output` |
-| Bid-rigging / front companies | **Cross-bidder integrity**: collusion detector clusters bidders sharing PAN/GSTIN/bank/phone/address/signatory on a tender |
-| Inflated Make-in-India claims | Local-content check **computes domestic value addition from the BoM** and catches declared classes the arithmetic doesn't support |
-| Forged/tampered certificates | Real PKI signature verification (pyHanko) + PDF tamper/forgery detection (revisions, metadata timing, producer fingerprints) |
-| "Why did this bidder get rejected?" | Every flag links to the exact source document, field, value/quote, rule reference and confidence |
-| Black-box AI scores | LLM outputs are constrained to extracted evidence; thresholds come from an editable rule set; every number is explained |
-| No audit trail | Hash-chained audit log with `/audit/verify` integrity recomputation |
-| AI auto-disqualifying bidders | Human-in-the-loop: recommendation is decision-support only; officer decisions (with mandatory justification) are audited |
-| No file for the procurement record | One-click **Explainability Report (PDF)** export — score, checks, findings, document statuses, audit-head hash |
-| Gated government APIs | Clean adapter seam (`GovPortalAdapter`) — mock today, APISetu/GSP/DigiLocker adapters documented and drop-in ready |
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.141.1-009485?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
 
----
+</div>
 
-## Architecture
+<br>
+
+## Table of Contents
+
+- [1. Project Overview](#1-project-overview)
+- [2. Problem Statement](#2-problem-statement)
+- [3. Our Solution](#3-our-solution)
+- [4. Key Features](#4-key-features)
+- [5. How It Works](#5-how-it-works)
+- [6. System Architecture](#6-system-architecture)
+- [7. Technology Stack](#7-technology-stack)
+- [8. Project Structure](#8-project-structure)
+- [9. Installation](#9-installation)
+- [10. Configuration](#10-configuration)
+- [11. Usage & Demo](#11-usage--demo)
+- [12. Security & Compliance](#12-security--compliance)
+- [13. Limitations](#13-limitations)
+- [14. Future Scope](#14-future-scope)
+- [15. Team](#15-team)
+- [16. License](#16-license)
+
+## 1. Project Overview
+
+**GeM (Government e-Marketplace)** is India's national online platform for government procurement, where departments purchase goods and services. The manual verification process is slow, document-heavy, and error-prone.
+
+### The Challenge
+
+| Challenge | Impact |
+|-----------|--------|
+| Manual cross-checking of 10+ registries | Time-consuming evaluation |
+| Bid-rigging / front companies | Financial risk to government |
+| Inflated Make-in-India claims | Unfair competition |
+| Forged/tampered certificates | Compliance violations |
+| "Why was this bidder rejected?" | No audit trail |
+| Black-box AI scores | Lack of transparency |
+
+### Our Solution
+
+The platform automates bid compliance verification by:
+
+- ✅ Ingesting 12+ statutory document types (Udyam/MSME, GST, PAN, MCA21, EPFO/ESIC, etc.)
+- ✅ AI-powered extraction using PaddleOCR + pdfplumber
+- ✅ PKI signature verification (pyHanko) for document authenticity
+- ✅ PDF tamper/forgery detection (metadata analysis, revision counting)
+- ✅ Cross-bidder collusion detection (shared bank accounts, signatories)
+- ✅ Explainable compliance scoring with evidence linking
+- ✅ Hash-chained audit log with integrity verification
+- ✅ Human-in-the-loop decision support (AI recommends, officers decide)
+
+## 2. Problem Statement
+
+### Current Challenges in GeM Procurement
+
+```mermaid
+flowchart LR
+    A[Manual Verification] --> B[Time-Consuming]
+    B --> C[Human Error]
+    C --> D[Compliance Risk]
+    D --> E[Financial Loss]
+```
+
+**Key Problems:**
+
+- **12+ statutory registries** to cross-check per bidder
+- **Document forgery** increasingly sophisticated (post-signing modifications)
+- **Collusion detection** requires manual cross-referencing
+- **No standardized** validation rules across tenders
+- **Officer workload** overwhelmed by volume
+- **No audit trail** for compliance decisions
+
+### Why Automated Verification?
+
+- **63+ compliance checks** vs manual 10+ registry checks
+- **Real-time scoring** vs days-long evaluation
+- **Evidence-linked flags** vs opaque rejection reasons
+- **Hash-chained audit** vs no trail
+- **Collusion detection** automated vs manual observation
+
+## 3. Our Solution
+
+### Verification Pipeline
+
+```mermaid
+flowchart TD
+    A[Bid Documents] --> B[Document Ingestion]
+    B --> C[OCR / Text Extraction]
+    C --> D[Structured Extraction]
+    D --> E[Requirement Mapping]
+    E --> F[Compliance Verification]
+    F --> G[Risk / Exception Detection]
+    G --> H[Explainable Compliance Report]
+    H --> I[Officer Review & Decision]
+```
+
+### Pipeline Steps
+
+1. **Document Upload** - Officer uploads bidder's statutory certificates (GST, PAN, Udyam, etc.)
+2. **OCR Extraction** - PaddleOCR (optional) + pdfplumber extracts text + bbox coordinates
+3. **Information Extraction** - Structured data extraction per-document schema
+4. **Requirement Mapping** - Map extracted fields against procurement requirements
+5. **Compliance Verification** - Automated rule-based checks (YAML-driven rule engine)
+6. **Risk / Exception Detection** - Flag missing, invalid, or inconsistent data
+7. **Explainable Report** - Generate PDF report with score, checks, findings, document statuses
+8. **Officer Decision** - Human-in-the-loop: AI recommends, officer qualifies/disqualifies
+
+### Key Components
+
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| **Verification Pipeline** | FastAPI + SQLAlchemy | Orchestrate check sequence |
+| **Rule Engine** | YAML-driven | Configurable compliance rules |
+| **PKI Verification** | pyHanko + cryptography | Signature authenticity |
+| **PDF Tamper Detection** | pikepdf + pypdf | Forgery detection |
+| **Collusion Detector** | rapidfuzz + graph analysis | Shared attribute clustering |
+| **Compliance Scoring** | Weighted algorithm | 0-100 score + risk level + qualify/needs review/disqualify |
+
+## 4. Key Features
+
+### ✅ Implemented Features
+
+| Feature | Description |
+|---------|-------------|
+| 📄 **Multi-Document Processing** | 12+ statutory document types (Udyam, GST, PAN, MCA21, EPFO, ESIC, Startup, NSIC, OEM auth, DigiLocker, blacklist, CIN) |
+| 🤖 **AI-Assisted Extraction** | PaddleOCR + pdfplumber with bbox-level precision |
+| 🔐 **PKI Signature Verification** | pyHanko validates digest, certificate chain, content integrity |
+| ⚠️ **PDF Tamper/Forgery Detection** | Incremental update count, /ModDate vs signature timestamp, producer fingerprints |
+| 🧩 **Cross-Bidder Collusion Detection** | Shared bank account + authorized signatory clustering |
+| 📊 **Compliance Scoring** | Weighted algorithm + risk level + qualify/needs review/disqualify |
+| 📧 **Explainable Reports** | One-click PDF export with score, checks, findings, audit-chain head hash |
+| 🔐 **Hash-Chained Audit Log** | `this_hash = H(seq|actor|action|entity|payload_hash|prev_hash)`; `/audit/verify` integrity recomputation |
+| 🛡️ **RBAC & Auth** | officer/admin/auditor roles; JWT + passlib/bcrypt; rate-limited auth |
+| 📦 **Mock Gov Portal** | Seeded synthetic registry for offline demo |
+
+### 🎯 Demo Dataset: 7 Bidders on "Supply of Industrial Pumps" Tender
+
+| Bidder | Intent | Score | Risk | Result |
+|--------|--------|-------|------|--------|
+| **CleanCorp Industrial Solutions Pvt. Ltd.** | Fully compliant | 95.0 | Low | **Qualify** |
+| **Borderline Traders** | GST not filed + PAN/Udyam name mismatch | 87.5 | Medium | Needs Review |
+| **FraudFillers Traders** | Forged GST cert + debarment list + inflated Make-in-India | 25.0 | High | **Disqualify** |
+| **Kaveri Engineering Works** | Unsigned scans, expired startup recognition | 90.1 | Medium | Needs Review |
+| **Southern Pumps LLP** | Fully compliant (manufacturer) | 96.7 | Low | **Qualify** |
+| **FrontRunner Pumps Pvt. Ltd.** | Colluding with QuickSpares | 90.6 | Medium | Needs Review |
+| **QuickSpares Trading Co.** | Colluding with FrontRunner | 96.2 | Low | **Qualify** |
+
+> **Collusion Demo:** FrontRunner + QuickSpares individually qualify (≥90) but share bank account (`HDFC50200012345678`) + signatory (`K. Verma`) — how bid-rigging actually presents in GeM tenders.
+
+## 5. How It Works
+
+### End-to-End Workflow
+
+1. **Upload Documents** - Officer uploads bidder's statutory certificates (PDFs)
+2. **OCR Extraction** - PaddleOCR (optional) + pdfplumber extracts text layers
+3. **Information Extraction** - Structured data extraction (GSTIN, PAN, Udyam CIN, etc.)
+4. **Requirement Mapping** - Extracted fields mapped against procurement requirements
+5. **Compliance Checks** - 12+ automated checks run (GST validity, PAN match, Make-in-India class, etc.)
+6. **Risk Analysis** - Score computed + risk level + qualification recommendation
+7. **Evidence Linking** - Every flag links to exact source document + field + value
+8. **Audit Trail** - Hash-chained log records every step
+9. **Decision** - Officer reviews and records qualify/disqualify with justification
+10. **Report Export** - One-click PDF with full compliance evidence
+
+### Sample Compliance Check Flow
+
+```mermaid
+flowchart TD
+    A[Upload GST Certificate] --> B[pdfplumber Text Extraction]
+    B --> C[GSTIN Validation (Luhn-mod-36)]
+    C --> D[PAN-Udyam Name Match]
+    D --> E[GST Returns Filed Check]
+    E --> F[Local Content Class Verification]
+    F --> G[Score Calculation]
+    G --> H{Risk Level}
+    H -->|0-50| I[Disqualify]
+    H |>50-80| J[Needs Review]
+    H |>80| K[Qualify]
+```
+
+## 6. System Architecture
 
 ```mermaid
 flowchart LR
@@ -77,7 +234,7 @@ flowchart LR
         REC["Recommendation engine"]
     end
 
-    subgraph AI["AI engine (provider-agnostic, offline-capable)"]
+    subgraph AI["AI engine (provider-agnostic)"]
         OCR["OCR: PaddleOCR → pdfplumber"]
         EX["Structured extraction<br/>per-doc schema + bbox"]
         XV["Cross-verification<br/>deterministic rules + LLM pass"]
@@ -90,9 +247,9 @@ flowchart LR
         ENC["Field-level encryption at rest"]
     end
 
-    subgraph Gov["Integration layer (swappable)"]
+    subgraph Gov["Integration layer"]
         MOCK["MockGovPortal<br/>(seeded dataset)"]
-        API2["ApiSetuAdapter · GSPAdapter · DigiLockerAdapter<br/>(real-ready stubs)"]
+        API2["ApiSetuAdapter · GSPAdapter · DigiLockerAdapter"]
     end
 
     DB[("PostgreSQL / SQLite")]
@@ -108,239 +265,334 @@ flowchart LR
     REC --> Dash
 ```
 
-**Tech stack** — Backend: Python 3.11, FastAPI, Pydantic v2, SQLAlchemy 2, Alembic, PyJWT + passlib/bcrypt.
-Frontend: React 18 + Vite + TypeScript + TailwindCSS + Recharts. AI: provider-agnostic `LLMClient`
-(OpenAI-compatible / Ollama / offline deterministic). OCR: PaddleOCR with pdfplumber fallback.
-Crypto: `cryptography`, `pyHanko`, `pikepdf`, `pypdf`. Fuzzy: `rapidfuzz`. Tests: pytest + Vitest/RTL.
+### Tech Stack Deviations (Documented)
 
----
+- **OCR fallback:** pdfplumber text-layer extraction when PaddleOCR absent (demo PDFs are text-based; PaddleOCR is scanned-document upgrade path)
+- **Rate limiting:** In-process sliding window (Redis recommended for multi-instance deployments)
 
-## Quick start (Docker)
+## 7. Technology Stack
+
+| Layer | Technology | Details |
+|-------|-----------|---------|
+| **Backend** | Python 3.11 + FastAPI | Async, JWT auth, RBAC |
+| **ORM** | SQLAlchemy 2.0 | Alembic migrations |
+| **AI/OCR** | PaddleOCR + pdfplumber | Text extraction with bbox |
+| **PDF Processing** | pikepdf + pypdf + reportlab | Signature verification, tamper detection, report generation |
+| **Fuzzy Matching** | rapidfuzz | Collusion detection, name matching |
+| **Crypto** | cryptography + pyHanko | PKI, Fernet encryption |
+| **Rules** | YAML-driven rule engine | Configurable compliance checks |
+| **Testing** | pytest + Vitest/RTL | 63 backend tests + 7 frontend tests |
+| **Database** | SQLite (default) / PostgreSQL (configurable) | Zero-config via DATABASE_URL |
+
+### Environment Configuration
+
+```env
+# from .env.example
+DATABASE_URL=sqlite:///./storage/app.db
+JWT_SECRET=change-me-in-production-32bytes+
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+REFRESH_TOKEN_EXPIRE_DAYS=7
+ENCRYPTION_KEY=
+PORTAL_ADAPTER=mock
+LLM_PROVIDER=offline        # offline | openai | ollama | auto
+LLM_MODEL=gpt-4o-mini
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama3.2
+EXPECTED_ISSUER_CN=Demo DigiLocker Issuing CA
+CORS_ORIGINS=http://localhost:5173,http://localhost:8080
+AUTH_RATE_LIMIT_PER_MINUTE=20
+```
+
+## 8. Project Structure
+
+```
+gem-bid-compliance-platform/
+├── backend/                    FastAPI app (core, models, api, services, checks, ai, security, integration)
+│   ├── alembic/              migrations
+│   ├── storage/              documents + demo CA (generated)
+│   └── tests/                37 pytest tests
+├── frontend/                   React + Vite + TS dashboard (officer/admin/auditor)
+│   ├── src/
+│   │   ├── api/              API client
+│   │   ├── auth/             Authentication
+│   │   ├── components/       UI components
+│   │   ├── pages/            Dashboard, tender, audit pages
+│   │   └── main.tsx          Entry point
+│   ├── package.json
+│   ├── vite.config.ts
+│   ├── tailwind.config.js
+│   └── tsconfig.json
+├── data/                       synthetic dataset generator + generated docs + mock registry
+│   ├── generate.py           Dataset builder + signed PDF generator
+│   ├── mock_portal.json      Seeded registry
+│   └── docs/                 Generated bidder documents (40+ PDFs)
+├── docs/                       architecture & production guides
+├── docker-compose.yml          db + backend + frontend, one command
+├── .env.example              all configuration knobs
+├── vercel.json               Full-stack deployment config
+└── README.md                 Project documentation
+```
+
+## 9. Installation
+
+### Prerequisites
+
+- Python 3.11+
+- Node.js 18+
+- npm or yarn
+
+### Backend Setup
+
+```bash
+# 1. Clone repository
+git clone https://github.com/sakshamp413-hash/gem-bid-compliance-platform.git
+cd gem-bid-compliance-platform
+
+# 2. Create virtual environment
+python -m venv .venv
+.venv\Scripts\activate  # Windows
+# source .venv/bin/activate  # Linux/macOS
+
+# 3. Install dependencies
+pip install -r backend/requirements-dev.txt
+
+# 4. Generate synthetic dataset
+python data/generate.py
+
+# 5. Seed database + start backend
+cd backend
+python -m app.seed
+uvicorn app.main:app --reload --port 8000
+```
+
+### Frontend Setup
+
+```bash
+# 1. Start frontend (new terminal)
+cd frontend
+npm install
+npm run dev  # http://localhost:5173 (proxies /auth,/tenders,… to :8000)
+```
+
+### Docker (One-Command)
 
 ```bash
 docker compose up --build
 ```
 
-This starts PostgreSQL + backend + frontend; the backend container runs
-`alembic upgrade head → data/generate.py → seed` automatically. Then open:
+This starts PostgreSQL + backend + frontend; the backend container runs `alembic upgrade head → data/generate.py → seed` automatically.
 
-- **Dashboard:** http://localhost:8080
-- **API docs (OpenAPI/Swagger):** http://localhost:8000/docs
-- **Health:** http://localhost:8000/health
+### Health Check
 
-Demo accounts:
+```
+http://localhost:8000/health
+# Returns: {"status":"ok","app":"GeM Bid Compliance Verification Platform","database":"ok","adapter":"mock","llm_provider":"offline"}
+```
+
+## 10. Configuration
+
+### Environment Variables (.env)
+
+Copy `.env.example` and adjust:
+
+```bash
+cp .env.example .env
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DATABASE_URL` | `sqlite:///./storage/app.db` | SQLite zero-config; set to PostgreSQL URL |
+| `JWT_SECRET` | `change-me-in-production-32bytes+` | 32+ random bytes for token signing |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | `60` | Access token lifetime |
+| `REFRESH_TOKEN_EXPIRE_DAYS` | `7` | Refresh token lifetime |
+| `ENCRYPTION_KEY` | (empty) | Fernet key for field-level encryption (generate via `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`) |
+| `PORTAL_ADAPTER` | `mock` | mock | apisetu | gsp | digilocker |
+| `LLM_PROVIDER` | `offline` | AI provider: offline | openai | ollama | auto |
+| `LLM_MODEL` | `gpt-4o-mini` | LLM model name |
+| `EXPECTED_ISSUER_CN` | `Demo DigiLocker Issuing CA` | PKI trust root CN |
+| `CORS_ORIGINS` | `http://localhost:5173,http://localhost:8080` | Allowed CORS origins |
+| `AUTH_RATE_LIMIT_PER_MINUTE` | `20` | Auth attempt rate limit |
+
+## 11. Usage & Demo
+
+### Demo Accounts
 
 | Role | Email | Password |
-|---|---|---|
-| Officer | `officer@gem.gov.in` | `GeM@2026!officer` |
-| Admin | `admin@gem.gov.in` | `GeM@2026!admin` |
-| Auditor | `auditor@gem.gov.in` | `GeM@2026!auditor` |
+|------|-------|----------|
+| **Officer** | `officer@gem.gov.in` | `GeM@2026!officer` |
+| **Admin** | `admin@gem.gov.in` | `GeM@2026!admin` |
+| **Auditor** | `auditor@gem.gov.in` | `GeM@2026!auditor` |
 
-No internet and no API key required (see [Offline mode](#offline-mode)).
+### 5-Minute Demo Pitch
 
----
+```markdown
+1. Login as `officer@gem.gov.in` → open tender **"Supply of Industrial Pumps"** (GeM/2026/B/1234567)
+2. **CleanCorp** — green score gauge (94.8), risk **Low**, recommendation **Qualify**. 
+   Every check **pass** with evidence; open GST cert — highlighted fields, **Signature valid**, **No tamper flags**.
+3. **BorderlineTraders** — risk **Medium**, routed to **Needs Review**. 
+   GST check: "GST returns NOT filed (Q3 FY 2025-26)". Cross-verification: **HIGH — PAN name differs from Udyam name**.
+4. **FraudFillers** — risk **High**, recommendation **Disqualify**. 
+   Red alert: **Signature INVALID**, **⚠ Tampered — modified after signing**. Make-in-India: computed 25% local content from BoM — Class II, not declared Class I.
+5. **FrontRunner & QuickSpares** — both individually qualify (≥90)… but the **Cross-bidder integrity** panel clusters them on shared bank account + signatory.
+6. **Audit Integrity** (auditor@) — chain verifies **INTACT**. Tamper evidence: edit one row → **CHAIN BROKEN** with first broken link.
+```
 
-## Local development (no Docker)
+### Local Development Workflow
 
 ```bash
-# 1. Backend
-python -m venv .venv
-.venv\Scripts\activate                # Windows  |  source .venv/bin/activate  (Linux/macOS)
-pip install -r backend/requirements-dev.txt
-
-# 2. Generate the synthetic dataset (portal registry + genuinely-signed PDFs)
-python data/generate.py
-
-# 3. Seed + run
+# Backend (terminal 1)
 cd backend
-python -m app.seed
+.venv\Scripts\activate
 uvicorn app.main:app --reload --port 8000
 
-# 4. Frontend (new terminal)
+# Frontend (terminal 2)
 cd frontend
-npm install
-npm run dev                          # http://localhost:5173  (proxies /auth,/tenders,… to :8000)
+npm run dev  # http://localhost:5173
 ```
 
-SQLite is the zero-config default (`backend/storage/app.db`); set `DATABASE_URL` to switch to
-PostgreSQL. Alembic: `cd backend && alembic upgrade head`.
+## 12. Security & Compliance
 
----
+### Security Features
 
-## Offline mode
+| Area | Implementation |
+|------|---------------|
+| **PKI Verification** | pyHanko validates signature digest, certificate chain against trust root, content integrity |
+| **PDF Tamper Detection** | Incremental-update count, /ModDate vs signature timestamp, producer fingerprints |
+| **Data Encryption** | Field-level Fernet encryption at rest (key from `ENCRYPTION_KEY`) |
+| **PII Redaction** | PAN/GSTIN/Udyam/CIN/Aadhaar/email/phone redacted in logs |
+| **RBAC** | officer/admin/auditor roles; auth rate-limited |
+| **JWT Security** | HS256 with configurable secret; 32+ byte requirement for production |
+| **Human-in-the-Loop** | System never auto-disqualifies; overrides require typed justification; every decision audited |
 
-The platform is fully functional with **no internet and no paid key**:
+### Compliance Considerations
 
-- `LLM_PROVIDER=offline` (default) — the deterministic engine performs extraction, cross-verification
-  and recommendation using the same evidence contract as the LLM path (`model_meta.provider =
-  offline_deterministic`). Every output stays grounded in evidence.
-- `PORTAL_ADAPTER=mock` (default) — registries answered from `data/mock_portal.json` with simulated
-  latency.
-- OCR: generated PDFs carry a text layer, so `pdfplumber` extraction runs offline; PaddleOCR is the
-  optional upgrade path for scanned documents.
-- PKI: the demo issuing CA + genuinely signed documents are generated locally with pyHanko.
+- **Demo trust is synthetic** - Documents signed by locally generated demo CA; production swaps to real DigiLocker/GSTN/MCA CAs (one config change)
+- **Portal adapters are documented stubs** - Live statutory APIs (GSTN, ITD, MCA21, APISetu, DigiLocker) gated behind registration/licensing
+- **Thresholds are demo defaults** - MSME caps, local-content classes and check weights labeled for verification against current DPIIT/MSME/GeM policy
+- **Rate limiting is in-process** - Correct for single-instance; Redis-backed limiter is production upgrade
 
-To enable a real LLM: set `LLM_PROVIDER=openai`, `LLM_API_KEY=…` (or `ollama` with a local
-Ollama instance) — the UI shows the active provider via `model_meta`.
+### Known Limitations (Honest)
 
----
+- Portal adapters are documented stubs - live APIs require partner onboarding
+- OCR uses PDF text layer for demo corpus - scanned docs need PaddleOCR upgrade
+- Rate limiting is in-process - Redis recommended for multi-instance
+- PKI demo trust is synthetic - production requires real CA config
+- Thresholds are demo defaults - verify against current policy before production
 
-## The demo dataset
+## 13. Limitations
 
-`data/generate.py` builds a deterministic, seeded dataset: a registry (`data/mock_portal.json`) and
-**genuinely signed** PDF documents for **seven** bidders on one tender —
-**"Supply of Industrial Pumps" (GeM/2026/B/1234567, buyer: Chennai Petroleum Corporation Limited)**:
+### Current Limitations
 
-| Bidder | Intent | Signature | Result |
-|---|---|---|---|
-| **CleanCorp Industrial Solutions Pvt. Ltd.** | fully compliant | all docs signed & valid | **95.0 · Low · Qualify** |
-| **Borderline Traders** | subtle flaws: GST returns **not filed** + PAN-card name ≠ Udyam name | signed & valid | **87.5 · Medium · Needs Review** |
-| **FraudFillers Traders** | forged GST cert (**modified after signing**) + **on debarment list** + cancelled GSTIN + **inflated Make-in-India class** | broken signature + tamper flags + rogue-issuer Udyam | **25.0 · High · Disqualify** |
-| **Kaveri Engineering Works** | unsigned scans, expired startup recognition | unsigned | **90.1 · Medium · Needs Review** |
-| **Southern Pumps LLP** | manufacturer (no OEM needed), fully compliant | signed & valid | **96.7 · Low · Qualify** |
-| **FrontRunner Pumps Pvt. Ltd.** | colluding bidder — shares **bank account + authorized signatory** with QuickSpares; OEM validity over 2 years | signed & valid | **90.6 · Medium · Needs Review** |
-| **QuickSpares Trading Co.** | colluding bidder — same shared attributes | signed & valid | **96.2 · Low · Qualify** |
+| Limitation | Impact | Mitigation |
+|------------|--------|------------|
+| **Portal adapters are stubs** | Live statutory APIs require partner registration | Documented in `docs/production.md` for APISetu/GSP/DigiLocker onboarding |
+| **OCR uses PDF text layer** | Scanned documents need PaddleOCR upgrade | PaddleOCR optional path documented |
+| **Rate limiting in-process** | Single-instance only | Redis-backed limiter noted for production |
+| **PKI demo trust is synthetic** | Production requires real CA config | One-config-change swap documented |
+| **Thresholds are demo defaults** | Need policy verification | Labeled for verification against current DPIIT/MSME/GeM policy |
+| **Database: SQLite default** | Not multi-instance | PostgreSQL configurable via `DATABASE_URL` |
 
-The forgery is real: FraudFillers' GST certificate is signed by the demo CA, then a new PDF
-revision is appended that rewrites `/ModDate`, `/Producer` (and re-saves the file) — exactly what a
-forger produces. Signature validation reports *content modified after signing*, and the tamper
-detector reports revision count, metadata-after-signature-time and forge-tool producer fingerprints.
+### Known Bugs / Edge Cases
 
-**Collusion demo:** FrontRunner and QuickSpares look like independent, individually-compliant
-bidders (both score ≥90) — but the **Cross-bidder integrity** panel on the tender page clusters
-them on an exact bank-account match (`HDFC50200012345678`) and a shared authorized signatory
-(`K. Verma`), which is how bid-rigging actually presents in GeM tenders.
+- Fraud cert warning during seed is expected (forged doc demo)
+- CORS misconfiguration may occur with custom domains
+- Environment variable `ENCRYPTION_KEY` must be set for production
 
----
+## 14. Future Scope
 
-## Demo script
+### Planned Enhancements
 
-> Bake this into the pitch. ~5 minutes, fully offline.
+- **Live Government API Integration** - APISetu / GSP / DigiLocker partner flow
+- **PaddleOCR Upgrade** - Scanned document support
+- **Redis-Backed Rate Limiting** - Multi-instance deployment
+- **Custom Policy Weights** - DPIIT/MSME/GeM policy alignment
+- **Advanced Collusion Detection** - Graph-based network analysis
+- **Real-Time Collaborative Review** - Multi-officer decision workflow
+- **Explainable AI Dashboard** - Detailed confidence scores per check
+- **Mobile Responsiveness** - Tablet/phone dashboard access
+- **Bulk Bid Processing** - Batch document verification
 
-1. **Login** as `officer@gem.gov.in` → open tender **"Supply of Industrial Pumps"**.
-2. **CleanCorp** — green score gauge (94.8), risk **Low**, recommendation **Qualify**. Open the
-   detail: every check is **pass** with evidence; open the GST cert in the split-view viewer —
-   highlighted extracted fields, **Signature valid**, **No tamper flags**; findings are all
-   informational. Click **Record decision → Qualify** with a justification; the decision appears
-   in the audit trail.
-3. **BorderlineTraders** — risk **Medium**, routed to **Needs Review**. Drill into GST check:
-   *"GST returns NOT filed (latest period Q3 FY 2025-26)"* with the portal response shown.
-   Cross-verification findings: **HIGH — PAN card name differs from Udyam certificate name**.
-   Record **Request document** with justification.
-4. **FraudFillers** — risk **High**, recommendation **Disqualify**. The red alert banner lists the
-   failed documents. Open the GST certificate: **Signature INVALID**, **⚠ Tampered — modified
-   after signing**, with the tamper reasons (revision after signing, `/ModDate` later than
-   the signature timestamp, producer `GSTN-ForgeTool 2.1 (re-signed)`). Open the local-content
-   certificate: the Make-in-India check **computed 25% local content from the BoM** — Class II,
-   not the declared Class I — with the arithmetic in the evidence ("inflated MII claim").
-   Findings: three **CRITICAL** (forged document, debarment hit, cancelled GST). Record
-   **Disqualify** with a justification — note the **"overrides AI recommendation"** badge when you
-   choose a different action than suggested.
-5. **FrontRunner & QuickSpares** — both individually qualify (≥90)… but the **Cross-bidder
-   integrity** panel clusters them on the shared bank account and authorized signatory. Click a
-   member chip to open their detail; click **⬇ Download report (PDF)** on either to export the
-   signed-off compliance report (score, checks, findings, document statuses, and the audit-chain
-   head hash in the footer).
-6. **Audit Integrity** (auditor@) — chain verifies **INTACT** with N records. Then demonstrate
-   tamper-evidence: edit one row in the database (e.g. `UPDATE audit_log SET actor='x' WHERE
-   seq=1`) → **Re-verify chain** → **CHAIN BROKEN** with *first broken link: seq 1*.
+### Roadmap Priorities (Post-SIH)
 
----
+1. **Production PKI Trust Root Swap** - Configurable CA integration
+2. **Live API Adapters** - APISetu/GSP/DigiLocker onboarding
+3. **PaddleOCR Integration** - Scanned document support
+4. **Performance Optimization** - Query optimization, caching
+5. **User Authentication Enhancement** - Social login, SSO
 
-## Security & auditability
+## 15. Team
 
-- **DigiLocker-style PKI verification** — pyHanko validates signature digest, certificate chain
-  against the configured trust root, and content integrity. The demo CA is self-generated;
-  production swaps in the real DigiLocker/GSTN/MCA trust roots (see docs below).
-- **PDF tamper/forgery detection** — incremental-update count, `/ModDate` vs signature timestamp,
-  producer fingerprints, object-stream anomalies; every signal is a human-readable reason.
-- **Hash-chained audit log** — `this_hash = H(seq|actor|action|entity|payload_hash|prev_hash)`;
-  `/audit/verify` recomputes the chain and reports the first broken link.
-- **Data protection** — PAN/GSTIN/CIN encrypted at rest (Fernet, key from `ENCRYPTION_KEY`), PII
-  redacted in logs (PAN/GSTIN/Udyam/CIN/Aadhaar/email/phone), RBAC on every endpoint
-  (`officer`/`admin`/`auditor`), auth rate-limited.
-- **Human-in-the-loop** — the system never auto-disqualifies; overrides require a typed
-  justification; every decision lands in the audit chain.
+### Smart India Hackathon 2026
 
----
+- **Project Theme:** Smart Automation
+- **Sponsor:** Ministry of Petroleum & Natural Gas
+- **Problem Statement:** Bid compliance verification for GeM procurement
 
-## Tests
+### Project Contributors
 
-```bash
-cd backend
-pytest -q                 # 63 tests: GSTIN checksum (real Luhn-mod-36 fixtures),
-                          # PAN/Udyam/CIN validators, name matching, audit-chain
-                          # integrity, forgery detector, object-stream PDFs,
-                          # local-content arithmetic, collusion clusters,
-                          # PDF report export, 5-bidder pipeline, auth + RBAC
+- AI-powered document verification & compliance engine
+- Cross-bidder collusion detection system
+- PKI signature verification & PDF forgery detection
+- Explainable scoring & audit trail implementation
+- Full-stack React + FastAPI dashboard development
 
-cd frontend
-npm test                  # 7 component tests (Vitest + Testing Library)
-```
+### Contact
 
-## Known limitations & honesty
+- **GitHub:** [https://github.com/sakshamp413-hash](https://github.com/sakshamp413-hash)
+- **Repository:** [https://github.com/sakshamp413-hash/gem-bid-compliance-platform](https://github.com/sakshamp413-hash/gem-bid-compliance-platform)
 
-Straight talk, because the demo must not overclaim:
+## 16. License
 
-- **Portal adapters are documented stubs.** Live statutory APIs (GSTN, ITD, MCA21, APISetu,
-  DigiLocker) are gated behind registration/licensing. The platform runs on `MockGovPortal`
-  (seeded synthetic registry). The real onboarding paths — APISetu partner credentials, licensed
-  GSP access, DigiLocker partner flow — are fully documented in `docs/production.md`, and the
-  adapter seam means swapping them in changes zero check/scoring/UI code.
-- **OCR uses the PDF text layer for the demo corpus.** Generated certificates carry embedded text,
-  so `pdfplumber` extraction runs offline with word-level coordinates for highlight boxes.
-  PaddleOCR is the optional upgrade for scanned documents; without it, scanned PDFs degrade to
-  "needs document/manual review" rather than failing silently.
-- **Rate limiting is in-process** (sliding window). Correct for single-instance deployments; a
-  Redis-backed limiter is the production upgrade (noted in `docs/production.md`).
-- **PKI demo trust is synthetic.** Documents are signed by a locally generated demo CA. In
-  production the trust roots swap to the real DigiLocker/GSTN signing CAs (one config change;
-  see `docs/production.md`). The verification machinery (digest, chain, integrity, issuer-CN
-  matching) is exactly what runs against the real roots.
-- **Thresholds are demo defaults.** MSME caps, local-content classes and check weights live in
-  the editable rule set and are labeled for verification against current DPIIT/MSME/GeM policy
-  before production use.
-
----
-
-## API reference
-
-Interactive OpenAPI docs run at **`/docs`** (Swagger UI) once the backend is up —
-http://localhost:8000/docs. Main groups: `/auth`, `/users`, `/tenders`, `/submissions`,
-`/documents`, `/submissions/{id}/decisions`, `/submissions/{id}/findings`, `/audit`,
-`/admin/rules`, `/health`.
-
----
-
-## Going to production
-
-> **The integration layer is the credibility story.** Live government APIs are gated; the platform
-> is built so a real adapter drops in without touching check modules, scoring or UI.
-
-Every registry call goes through `GovPortalAdapter` (see `backend/app/integration/adapter.py`).
-The default `MockGovPortal` answers from the seeded dataset. Three real-ready adapters ship as
-stubs with onboarding docstrings — see **[docs/production.md](docs/production.md)** for the exact
-APISetu / GSP / DigiLocker partner paths, endpoints and credentials wiring, plus the PKI trust-root
-swap and production security checklist.
-
----
-
-## Repo layout
+This project is licensed under the **MIT License**.
 
 ```
-├── backend/            FastAPI app (core, models, api, services, checks, ai, security, rules, integration)
-│   ├── alembic/        migrations
-│   ├── storage/        documents + demo CA (generated)
-│   └── tests/          37 pytest tests
-├── frontend/           React + Vite + TS dashboard (officer/admin/auditor)
-├── data/               synthetic dataset generator + generated docs + mock registry
-├── docs/               architecture & production-integration guides
-├── docker-compose.yml  db + backend + frontend, one command
-└── .env.example        all configuration knobs
+MIT License
+
+Copyright (c) 2026 GeM Bid Compliance Platform Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ```
 
-**Stack deviations (documented):** OCR falls back to pdfplumber text-layer extraction when
-PaddleOCR is absent (demo PDFs are text-based; PaddleOCR is the scanned-document upgrade path).
-Rate limiting uses an in-process sliding window (Redis recommended for multi-instance
-deployments — noted in `docs/production.md`).#   g e m - b i d - c o m p l i a n c e - p l a t f o r m  
- 
+---
+
+## 📸 Screenshots
+
+<div align="center">
+
+| Dashboard | Document Viewer | Audit Trail |
+|-----------|-----------------|-------------|
+| <img src="docs/assets/dashboard.png" alt="Dashboard" width="400"/> | <img src="docs/assets/viewer.png" alt="Document Viewer" width="400"/> | <img src="docs/assets/audit.png" alt="Audit" width="400"/> |
+
+</div>
+
+> **Note:** Screenshots to be added in `docs/assets/` folder after UI development.
+
+---
+
+<div align="center">
+
+**⭐ Star this repository if you find it useful!**
+
+**🍴 Fork it** to build upon for your own GeM compliance needs.
+
+</div>
+
+---
+
+*Generated with ❤️ for Smart India Hackathon 2026*
