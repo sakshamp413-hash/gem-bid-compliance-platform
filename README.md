@@ -342,4 +342,5 @@ swap and production security checklist.
 **Stack deviations (documented):** OCR falls back to pdfplumber text-layer extraction when
 PaddleOCR is absent (demo PDFs are text-based; PaddleOCR is the scanned-document upgrade path).
 Rate limiting uses an in-process sliding window (Redis recommended for multi-instance
-deployments — noted in `docs/production.md`).
+deployments — noted in `docs/production.md`).#   g e m - b i d - c o m p l i a n c e - p l a t f o r m  
+ 
