@@ -573,15 +573,7 @@ SOFTWARE.
 
 ## 📸 Screenshots
 
-<div align="center">
-
-| Dashboard | Document Viewer | Audit Trail |
-|-----------|-----------------|-------------|
-| <img src="docs/assets/dashboard.png" alt="Dashboard" width="400"/> | <img src="docs/assets/viewer.png" alt="Document Viewer" width="400"/> | <img src="docs/assets/audit.png" alt="Audit" width="400"/> |
-
-</div>
-
-> **Note:** Screenshots to be added in `docs/assets/` folder after UI development.
+> **Note:** UI screenshots will be added under `docs/assets/` (e.g. dashboard, document viewer, audit page) once captured from a running prototype. No placeholder images are linked to avoid broken references.
 
 ---
 
