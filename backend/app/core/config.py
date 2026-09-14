@@ -67,6 +67,9 @@ class Settings(BaseSettings):
 
     # --- Rate limiting (auth endpoints) ---
     auth_rate_limit_per_minute: int = 20
+    # Redis URL for multi-instance rate limiting. Empty = in-process fallback.
+    # Production: set REDIS_URL=redis://localhost:6379/0 (see docs/production.md).
+    redis_url: str = ""
 
     # --- CORS ---
     cors_origins: str = "http://localhost:5173,http://localhost:3000"

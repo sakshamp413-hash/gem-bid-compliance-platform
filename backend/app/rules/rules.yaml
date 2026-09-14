@@ -18,6 +18,20 @@ meta:
     class thresholds and weightages with the sponsoring department
     before production use.
 
+# --- Policy sources (citations; thresholds above remain demo defaults) ---
+# Engine ignores unknown top-level keys; these refs surface in Admin UI/docs.
+# Verify each threshold against the live source before production use.
+policy_refs:
+  msme: {source: "MSMED Act / DPIIT MSME classification — msme.gov.in", status: "verify-before-prod"}
+  local_content: {source: "DPIIT Public Procurement (Preference to Make in India) Order — dpiit.gov.in", status: "verify-before-prod"}
+  gst: {source: "GST registration / returns — gst.gov.in via GSP/APISetu", status: "verify-before-prod"}
+  pan: {source: "Income Tax Dept PAN verification — incometax.gov.in via APISetu", status: "verify-before-prod"}
+  mca: {source: "MCA21 company registry — mca.gov.in", status: "verify-before-prod"}
+  blacklist: {source: "GeM debarment / CPP portal debarment list", status: "verify-before-prod"}
+  startup: {source: "Startup India DPIIT recognition — startupindia.gov.in", status: "verify-before-prod"}
+  nsic: {source: "NSIC registration — nsic.co.in", status: "verify-before-prod"}
+  epfo_esic: {source: "EPFO / ESIC establishment search — epfindia.gov.in / esic.gov.in", status: "verify-before-prod"}
+
 # --- MSME classification (as per MSMED Act / DPIIT notifications) ---
 msme:
   classification:
