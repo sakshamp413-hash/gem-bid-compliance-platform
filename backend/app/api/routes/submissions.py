@@ -154,3 +154,28 @@ def submission_report_pdf(
             ),
         },
     )
+
+
+@router.get("/{submission_id}/replay")
+def submission_replay(
+    submission_id: int,
+    _: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Decision Replay Engine (F06) — step-by-step verification playback for auditors.
+    Returns chronological steps: document processing → checks → AI assessment → officer decisions.
+    Each step includes timestamp, actor, event_type, result, and rule_ref.
+    """
+    sub = db.get(BidSubmission, submission_id)
+    if sub is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Submission not found")
+
+    from app.services.replay import reconstruct_decision_replay
+
+    try:
+        return reconstruct_decision_replay(db, submission_id)
+    except ValueError as exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, str(exc))
+    except Exception as exc:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, f"replay failed: {exc}")

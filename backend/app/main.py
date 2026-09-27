@@ -53,14 +53,16 @@ from app.api.routes import (  # noqa: E402
     decisions,
     documents,
     findings,
+    jobs,
     submissions,
     tenders,
     users,
+    vendors,
 )
 
 for r in (auth.router, users.router, tenders.router, submissions.router,
           documents.router, decisions.router, audit.router, findings.router,
-          admin.router):
+          admin.router, vendors.router, jobs.router):
     app.include_router(r)
 
 

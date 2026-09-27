@@ -23,6 +23,7 @@ indic-transliteration==2.3.82  # Devanagari→Latin for entity-name matching
 PyYAML==6.0.3          # rule set (rules are data)
 httpx==0.28.1          # LLM API calls + tests
 redis==5.0.8           # Redis-backed rate limiting (optional at runtime; falls back when REDIS_URL unset)
+arq==0.26.1            # Async Redis job queue for document processing (F07)
 # Optional AI/OCR extras (graceful degradation when absent):
 # paddleocr            # heavy OCR engine (optional)
 # pytesseract          # Tesseract fallback (optional)

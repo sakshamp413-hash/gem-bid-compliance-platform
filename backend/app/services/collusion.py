@@ -152,3 +152,82 @@ def detect_collusion(db, tender_id: int) -> dict[str, Any]:
         })
 
     return {"clusters": clusters, "notes": ["offline deterministic analysis — rule XVERIFY/collusion"]}
+
+
+def build_collusion_graph(db, tender_id: int) -> dict[str, Any]:
+    """
+    Build a D3.js-compatible force-directed node-link graph for the
+    Procurement Integrity Graph Visualizer (F05).
+
+    Returns:
+      {
+        nodes: [{id, label, group, submission_id}],
+        links: [{source, target, value, attributes, match_type}],
+        clusters: [...],  # raw cluster data
+        metadata: {tender_id, node_count, link_count, cluster_count, risk_level}
+      }
+
+    Node groups:
+      0 = clean (no shared attrs)
+      1..N = cluster index+1 (suspicious — colour-coded)
+    """
+    result = detect_collusion(db, tender_id)
+    clusters = result["clusters"]
+
+    items = _collect_attrs(db, tender_id)
+
+    # assign group (0 = clean, 1..N = cluster index+1)
+    group_map: dict[int, int] = {s.submission_id: 0 for s in items}
+    for grp_idx, cluster in enumerate(clusters):
+        for member in cluster["members"]:
+            group_map[member["submission_id"]] = grp_idx + 1
+
+    nodes = [
+        {
+            "id": f"s{s.submission_id}",
+            "label": s.bidder_name,
+            "submission_id": s.submission_id,
+            "group": group_map.get(s.submission_id, 0),
+            "suspicious": group_map.get(s.submission_id, 0) > 0,
+        }
+        for s in items
+    ]
+
+    links: list[dict[str, Any]] = []
+    for cluster in clusters:
+        for link in cluster.get("links", []):
+            between = link.get("between", link.get("submissions", []))
+            if len(between) < 2:
+                continue
+            src, tgt = between[0], between[1]
+            attrs = link.get("attributes", [])
+            match_kinds = list({a.get("match", "exact") for a in attrs})
+            avg_conf = (sum(a.get("confidence", 0.99) for a in attrs) / len(attrs)) if attrs else 0.99
+            links.append({
+                "source": f"s{src}",
+                "target": f"s{tgt}",
+                "value": round(avg_conf, 3),
+                "attributes": attrs,
+                "match_type": match_kinds[0] if len(match_kinds) == 1 else "mixed",
+            })
+
+    risk_level = (
+        "critical" if len(clusters) >= 2
+        else "high" if clusters
+        else "low"
+    )
+
+    return {
+        "nodes": nodes,
+        "links": links,
+        "clusters": clusters,
+        "notes": result["notes"],
+        "metadata": {
+            "tender_id": tender_id,
+            "node_count": len(nodes),
+            "link_count": len(links),
+            "cluster_count": len(clusters),
+            "risk_level": risk_level,
+            "source": "● MOCK (offline deterministic — XVERIFY/collusion)",
+        },
+    }

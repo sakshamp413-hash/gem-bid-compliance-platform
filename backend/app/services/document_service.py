@@ -84,3 +84,46 @@ def process_uploaded_document(
                  "tampered": tamper.get("tampered")},
     )
     return doc
+
+
+def process_document_sync(db: Session, doc: Document) -> dict[str, Any]:
+    """
+    Re-process an existing Document row (extraction + signature + tamper).
+    Used by F07 async worker when the file is already stored.
+    Returns a summary dict of what was updated.
+    """
+    path = doc.file_path
+    if not path or not Path(path).exists():
+        return {"error": f"file not found: {path}", "document_id": doc.id}
+
+    # 1) extraction
+    try:
+        extraction = extract_document(path, doc.doc_type)
+        doc.extracted_json = extraction
+        doc.ocr_confidence = extraction.get("confidence")
+        doc.ocr_source = extraction.get("source", "")
+    except Exception as exc:
+        logger.warning("process_document_sync extraction failed for doc %s: %s", doc.id, exc)
+
+    # 2) signature
+    sig = verify_pdf_signature(path)
+    if sig.get("signed") and sig.get("intact"):
+        doc.signature_status = "valid" if sig.get("trusted") else "untrusted"
+    elif sig.get("signed"):
+        doc.signature_status = "invalid"
+    else:
+        doc.signature_status = "not_signed"
+    doc.signature_detail = sig
+
+    # 3) tamper
+    tamper = analyze_pdf_tamper(path, sig)
+    doc.tamper_flags_json = tamper
+
+    db.commit()
+    return {
+        "document_id": doc.id,
+        "doc_type": doc.doc_type,
+        "signature_status": doc.signature_status,
+        "tampered": tamper.get("tampered"),
+        "ocr_confidence": doc.ocr_confidence,
+    }
