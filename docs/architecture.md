@@ -1,65 +1,80 @@
-# Architecture
+# System Architecture & Technical Specifications
 
-See the README for the full Mermaid diagram. This file documents module responsibilities.
+PRAMAAN is structured as a multi-tier decision-support platform designed to operate seamlessly alongside the Government e-Marketplace (GeM) and standard public e-procurement portals.
 
-## Backend (`backend/app`)
+---
 
-```
-core/         config (pydantic-settings), JWT+bcrypt security, Fernet field crypto,
-              PII-redacting logging, rate limiter, Indian ID validators
-db/           engine/session, encrypted-string column type, hash-chained audit
-models/       SQLAlchemy 2 models: users, tenders, bidders, bid_submissions,
-              documents, verification_checks, compliance_assessments,
-              officer_decisions, audit_log
-schemas/      Pydantic v2 API schemas
-api/          deps (auth/RBAC/rate-limit) + route modules (auth, users, tenders,
-              submissions, documents, decisions, audit, findings, admin)
-services/
-  checks/     12 compliance check modules (udyam, gst, pan, mca, local_content,
-              epfo, esic, startup, nsic, oem, digilocker, blacklist)
-  pipeline.py orchestration: checklist → checks → AI cross-verify → score → recommendation
-  document_service.py  upload → extract → signature verify → tamper detect
-ai/           LLMClient (OpenAI-compat/Ollama/offline), OCR, extraction (per-doc
-              schema + bbox), cross-verification, recommendation
-security/     PKI signature verification (pyHanko), PDF tamper detection, demo CA
-rules/        rule engine (rules are data: rules.yaml), weighted scoring + risk
-integration/  GovPortalAdapter seam + MockGovPortal + APISetu/GSP/DigiLocker stubs
-seed.py       demo users/tender/5 bidders + full pipeline run
-```
+## 1. The Six-Layer Procurement Intelligence Model
 
-## Pipeline (single assessment)
+```mermaid
+flowchart TD
+    subgraph L1["Layer 1: Tender Intelligence Layer"]
+        T[GeM Tender Document / ATC PDF] --> TS[Clause Segmentation Engine]
+        TS --> TR[Structured Requirements & Eligibility Conditions]
+    end
 
-```
-documents (extracted + signed/tamper analyzed)
-  → applicable checklist from (tender, bidder) + rule set
-  → per-check: format/validity → mock-portal cross-check → cross-document
-    consistency → evidence-linked CheckOutput
-  → AI cross-verification (deterministic rules + optional LLM pass)
-  → weighted score (pass=1, flag=0.5, fail=0 × weight × confidence)
-  → risk: high if hard-fail/forgery/debarment; medium if flags/score<80
-  → pending requirements + plain-language recommendation (Qualify /
-    Needs-Review / Disqualify-candidate)
-  → persist + hash-chained audit entries
-  → officer PDF report (report_service.py) keyed to the audit-chain head
+    subgraph L2["Layer 2: Vendor Digital Compliance Twin"]
+        D[Statutory & Technical Evidence PDFs] --> OCR[Layout-Aware OCR: PaddleOCR / pdfplumber]
+        OCR --> NER[Structured Entity Resolution: GST, PAN, Udyam, CIN, Banking]
+    end
 
-Tender-level (collusion.py): similarity graph over {pan, gstin, cin,
-bank_account, phone, address, signatory_name} — exact for identifiers,
-form-aware fuzzy for names — emits clusters with shared-attribute evidence
-(rule XVERIFY/collusion) for the Cross-bidder integrity panel.
+    subgraph L3["Layer 3: Compliance Fusion Engine"]
+        TR & NER --> RE[Deterministic YAML Rule Engine]
+        RE --> SC[Multi-Factor Weighted Scoring & Risk Triage]
+    end
+
+    subgraph L4["Layer 4: Integrity & Fraud Intelligence"]
+        D --> PKI[pyHanko Cryptographic Signature Verification]
+        D --> TAM[pikepdf Incremental PDF Tamper & Revision Forensics]
+        NER --> COL[Bipartite Collusion & Cartel Clustering Engine]
+    end
+
+    subgraph L5["Layer 5: Sovereign Human Decision & Reporting"]
+        SC & PKI & TAM & COL --> DASH[Split-Screen Officer Evaluation Console]
+        DASH --> OVR[Sovereign Officer Adjudication & Justified Override]
+        OVR --> PDF[ReportLab Cryptographically Sealed Dossier Export]
+    end
+
+    subgraph L6["Layer 6: Evidence & Tamper-Evident Audit Fabric"]
+        OVR --> AUD[Append-Only SHA-256 Hash-Chained Audit Ledger]
+        AUD --> VER[/audit/verify Cryptographic Recomputation Engine]
+    end
 ```
 
-## Frontend (`frontend/src`)
+---
 
-```
-api/client.ts      typed fetch wrapper, token refresh, RBAC-aware
-auth/              AuthContext (role-aware routing)
-components/        Layout, ScoreGauge, CheckAccordion, DocViewer (split view with
-                   field bbox highlights), FindingList, AuditTimeline, badges
-pages/             Login, Tenders, Submissions, BidderDetail (hero), Admin, Auditor
-```
+## 2. Component Directory Responsibilities
 
-## Data generation (`data/generate.py`)
+### 2.1 Backend (`backend/app`)
+* **`core/`**: Configuration management via Pydantic Settings, JWT generation, bcrypt password hashing, Fernet symmetric field encryption, sliding-window rate limiting, and PII-redacting logging formatters.
+* **`db/`**: SQLAlchemy 2.0 database engine, encrypted column types, database migrations via Alembic, and hash-chained audit persistence.
+* **`models/`**: Declarative relational models mapping Users, Tenders, Tender Requirements, Bidders, Bid Submissions, Documents, Verification Checks, Decisions, and Audit Logs.
+* **`schemas/`**: Pydantic v2 schemas enforcing strict request validation, response serialization, and anti-injection sanitization.
+* **`api/`**: REST API route controllers organized by functional domain (`auth`, `tenders`, `submissions`, `documents`, `decisions`, `audit`, `anomalies`).
+* **`services/`**:
+  * `services/checks/`: 12+ modular compliance check executors covering GSTIN, PAN, Udyam, MCA21, EPFO, ESIC, Startup recognition, NSIC, OEM authorization, and Debarment lists.
+  * `services/pipeline.py`: Orchestrator executing the complete verification pipeline from raw PDF ingestion to risk classification.
+  * `services/collusion.py`: Graph-based clustering engine identifying shared bank accounts and common signatories across competing bids.
+  * `services/report_service.py`: Generates official PDF compliance reports anchored to the cryptographic audit head hash.
+* **`ai/`**: Layout-aware text extraction, bounding-box coordinate tracking, semantic entity matching via RapidFuzz, and sovereign AI provider abstractions (`offline`, `ollama`, `openai`).
+* **`security/`**:
+  * `security/signature_verify.py`: pyHanko CMS/PKCS#7 cryptographic digital signature validator.
+  * `security/tamper_detect.py`: pikepdf byte-level incremental revision analyzer and post-signing tampering detector.
+* **`rules/`**: Declarative compliance rules maintained as versioned YAML configurations (`rules.yaml`).
+* **`integration/`**: `GovPortalAdapter` interface with interchangeable backends (`MockGovPortal`, `ApiSetuAdapter`, `DigiLockerAdapter`).
 
-Renders government-style PDFs with reportlab → signs them with pyHanko against the demo CA →
-forges FraudFillers' GST certificate (incremental metadata update + full re-save) → writes the
-seeded registry (`data/mock_portal.json`). Deterministic and re-runnable.
+---
+
+## 3. Frontend Architecture (`frontend/src`)
+* **`api/`**: Strongly typed REST API client with automatic token refreshing and error boundary handling.
+* **`auth/`**: Context provider managing session state, role validation (`officer`, `admin`, `auditor`), and route guards.
+* **`components/`**: Reusable government-grade UI components:
+  * `ScoreGauge`: Animated compliance score visualizer with risk band color tokens.
+  * `CheckAccordion`: Interactive statutory check list with evidence deep-linking.
+  * `DocViewer`: High-resolution split-screen PDF document inspector with yellow highlighted bounding-box coordinate overlays.
+  * `AuditTimeline`: Chronological visual ledger of audit events with integrity status indicators.
+* **`pages/`**:
+  * `TendersPage.tsx`: Active procurement tenders list with extraction and evaluation progress.
+  * `SubmissionsPage.tsx`: Tender bid triage table with automated risk badges and score rankings.
+  * `BidderDetailPage.tsx`: The primary officer evaluation workstation featuring the split-screen evidence viewer and adjudication modal.
+  * `AuditorPage.tsx`: Real-time cryptographic ledger inspection and single-click SHA-256 chain verification.

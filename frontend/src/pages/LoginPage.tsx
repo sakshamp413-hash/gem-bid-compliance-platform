@@ -38,13 +38,19 @@ export default function LoginPage() {
       <div className="w-full max-w-4xl overflow-hidden rounded-xl bg-white shadow-2xl md:grid md:grid-cols-2">
         <div className="hidden flex-col justify-between bg-gradient-to-br from-gov-navy to-gov-blue p-8 text-white md:flex">
           <div>
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded bg-gov-accent text-lg font-bold text-gov-navy">
-              GeM
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded bg-gov-accent text-sm font-bold text-gov-navy">
+              प्रमाण
             </div>
-            <h1 className="text-xl font-bold leading-snug">
-              AI-Powered Integrated Bid Compliance Verification
+            <h1 className="text-2xl font-bold leading-snug">
+              PRAMAAN · प्रमाण
             </h1>
-            <p className="mt-3 text-sm text-slate-200">
+            <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-gov-accent">
+              AI-Powered GeM Bid Compliance &amp; Procurement Intelligence
+            </p>
+            <p className="mt-3 text-sm italic text-slate-200">
+              “Understand the tender. Verify the bid. Prove the decision.”
+            </p>
+            <p className="mt-3 text-xs text-slate-300">
               Statutory &amp; eligibility verification for GeM procurement — Udyam, GST, PAN,
               MCA21, Make-in-India, EPFO/ESIC, OEM, DigiLocker signatures and debarment —
               with full explainability and an auditable trail.

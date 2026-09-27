@@ -8,6 +8,9 @@ backend/storage/certs/*
 !backend/storage/certs/.gitkeep
 backend/.pytest_cache/
 .pytest_cache/
+.coverage
+*.coverage
+coverage.xml
 
 # Node
 frontend/node_modules/

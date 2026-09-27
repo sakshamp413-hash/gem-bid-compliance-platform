@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=str(PROJECT_ROOT / ".env"), extra="ignore")
 
     # --- App ---
-    app_name: str = "GeM Bid Compliance Verification Platform"
+    app_name: str = "PRAMAAN — AI-Powered GeM Bid Compliance & Procurement Intelligence Platform"
     environment: str = "development"  # development | production
     debug: bool = True
 

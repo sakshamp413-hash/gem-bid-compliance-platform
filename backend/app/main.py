@@ -26,9 +26,10 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="GeM Bid Compliance Verification Platform",
+    title="PRAMAAN — AI-Powered GeM Bid Compliance & Procurement Intelligence Platform",
     description=(
-        "AI-powered integrated bid compliance verification for GeM procurement. "
+        "PRAMAAN turns complex GeM tender requirements and bidder documents into explainable, "
+        "evidence-backed compliance decisions before a bid is rejected or a procurement decision is finalized. "
         "Human-in-the-loop decision support: the system recommends, the officer decides. "
         "Interactive docs at /docs (OpenAPI)."
     ),

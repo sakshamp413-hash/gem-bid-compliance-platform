@@ -21,13 +21,18 @@ export default function Layout() {
       <header className="bg-gov-navy text-white shadow-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
           <Link to="/tenders" className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded bg-gov-accent font-bold text-gov-navy">
-              GeM
+            <div className="flex h-9 w-9 items-center justify-center rounded bg-gov-accent font-bold text-gov-navy text-xs">
+              प्रमाण
             </div>
             <div>
-              <div className="text-sm font-bold tracking-wide">BID COMPLIANCE VERIFICATION</div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold tracking-wide">PRAMAAN · प्रमाण</span>
+                <span className="hidden rounded bg-emerald-800/80 px-1.5 py-0.5 text-[9px] font-semibold tracking-wider text-emerald-200 sm:inline-block">
+                  DEMO MODE (SYNTHETIC)
+                </span>
+              </div>
               <div className="text-[11px] text-slate-300">
-                AI-assisted · Human-in-the-loop · GeM Procurement
+                AI-Powered GeM Bid Compliance & Procurement Intelligence
               </div>
             </div>
           </Link>
