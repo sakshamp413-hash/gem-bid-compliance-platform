@@ -74,11 +74,15 @@ def _collect_attrs(db, tender_id: int) -> list[SubmissionAttrs]:
 
 
 def _attr_link(a: str, b: str, attr: str) -> tuple[bool, float, str]:
-    """Return (linked, confidence, match_kind)."""
+    """Return (linked, confidence, match_kind) with length-adaptive threshold."""
     if attr in _EXACT_ATTRS:
         return (a == b, 0.99, "exact")
     score = name_match_score(a, b)
-    if score >= _FUZZY_THRESHOLD:
+    # Length-adaptive threshold: shorter strings (<12 chars) require 92.0% similarity
+    # to prevent false positive collisions on short names/words
+    min_len = min(len(a.strip()), len(b.strip()))
+    threshold = 92.0 if min_len < 12 else _FUZZY_THRESHOLD
+    if score >= threshold:
         return (True, score / 100.0, "fuzzy")
     return (False, 0.0, "none")
 

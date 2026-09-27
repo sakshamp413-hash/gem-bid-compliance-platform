@@ -26,9 +26,17 @@ def payload_hash(payload: dict[str, Any] | None) -> str:
 
 
 def compute_hash(
-    seq: int, actor: str, action: str, entity: str, payload_hash_: str, prev_hash: str
+    seq: int,
+    actor: str,
+    action: str,
+    entity: str,
+    payload_hash_: str,
+    prev_hash: str,
+    timestamp: str | None = None,
 ) -> str:
     raw = f"{seq}|{actor}|{action}|{entity}|{payload_hash_}|{prev_hash}"
+    if timestamp:
+        raw = f"{raw}|{timestamp}"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
@@ -87,6 +95,14 @@ def verify_chain(db) -> dict[str, Any]:
         expected = compute_hash(
             row.seq, row.actor, row.action, row.entity, row.payload_hash, prev_hash
         )
+        if expected != row.this_hash and row.created_at:
+            expected_with_ts = compute_hash(
+                row.seq, row.actor, row.action, row.entity, row.payload_hash, prev_hash,
+                row.created_at.isoformat()
+            )
+            if expected_with_ts == row.this_hash:
+                expected = expected_with_ts
+
         if expected != row.this_hash:
             result["valid"] = False
             result["first_broken_seq"] = row.seq

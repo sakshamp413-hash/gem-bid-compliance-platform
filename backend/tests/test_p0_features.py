@@ -240,3 +240,27 @@ def test_f07_async_jobs(client, db):
     assert status_data["job_id"] == job_id
     assert status_data["status"] in ("queued", "running", "done", "failed")
     assert 0.0 <= status_data["progress_pct"] <= 100.0
+
+
+def test_f07_job_timeout_reaper(db):
+    """F07: Test reap_stalled_jobs marks orphaned jobs older than timeout as failed."""
+    from datetime import datetime, timedelta
+    from app.models.async_job import AsyncJob
+    from app.services.worker import reap_stalled_jobs
+
+    stalled_job = AsyncJob(
+        job_id="test-stalled-job-123",
+        job_type="document_process",
+        status="running",
+        progress_pct=15.0,
+        updated_at=datetime.utcnow() - timedelta(seconds=400),
+    )
+    db.add(stalled_job)
+    db.commit()
+
+    reaped_count = reap_stalled_jobs(db, timeout_seconds=300)
+    assert reaped_count >= 1
+
+    db.refresh(stalled_job)
+    assert stalled_job.status == "failed"
+    assert "timed out" in (stalled_job.error_message or "").lower()

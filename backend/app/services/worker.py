@@ -145,10 +145,33 @@ def enqueue_job(
     return {"job_id": job_id, "status": job.status, "async": False, "result": result}
 
 
+def reap_stalled_jobs(db, timeout_seconds: int = 300) -> int:
+    """
+    Mark orphaned/crashed jobs running longer than timeout_seconds as failed.
+    Prevents UI spinners from spinning infinitely if a worker crashes.
+    """
+    from app.models.async_job import AsyncJob
+
+    cutoff = datetime.utcnow().timestamp() - timeout_seconds
+    running_jobs = db.query(AsyncJob).filter(AsyncJob.status == "running").all()
+    reaped = 0
+    for job in running_jobs:
+        if job.updated_at and job.updated_at.timestamp() < cutoff:
+            job.status = "failed"
+            job.error_message = f"Worker job timed out (exceeded {timeout_seconds}s limit)"
+            job.updated_at = datetime.utcnow()
+            reaped += 1
+    if reaped:
+        db.commit()
+        logger.warning("reaped %d stalled async jobs", reaped)
+    return reaped
+
+
 def get_job_status(db, job_id: str) -> dict[str, Any] | None:
     """Retrieve job status record. Returns None if not found."""
     from app.models.async_job import AsyncJob
 
+    reap_stalled_jobs(db, timeout_seconds=300)
     job = db.query(AsyncJob).filter(AsyncJob.job_id == job_id).first()
     if job is None:
         return None
