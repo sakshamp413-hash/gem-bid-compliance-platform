@@ -7,6 +7,21 @@ export interface User {
   role: "officer" | "admin" | "auditor";
 }
 
+export interface Capabilities {
+  tender_ingestion: boolean;
+  bid_evidence_review: boolean;
+  compliance_score: boolean;
+  risk_fraud_indicators: boolean;
+  rule_visibility: boolean;
+  procurement_decision: boolean;
+  decision_override: boolean;
+  audit_verification: boolean;
+  rule_drafting: boolean;
+  rule_publishing: boolean;
+  user_management: boolean;
+  integration_management: boolean;
+}
+
 export interface TokenResponse {
   access_token: string;
   refresh_token: string;
@@ -253,4 +268,39 @@ export const api = {
     if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
     return fetch(`${API}/documents`, { method: "POST", body: form, headers });
   },
+  createTender: (body: {
+    gem_ref: string;
+    title: string;
+    buyer_org: string;
+    eligibility_json?: Record<string, unknown>;
+    local_content_class_required?: string | null;
+    msme_only?: boolean;
+    min_turnover_crore?: number | null;
+    required_docs_json?: string[];
+  }) => request<Tender>("/tenders", { method: "POST", body: JSON.stringify(body) }),
+  integrations: () =>
+    request<{
+      active_adapter: string;
+      adapter_class: string;
+      status: string;
+      integrations: {
+        id: string;
+        name: string;
+        authority: string;
+        status: string;
+        endpoint_type: string;
+        avg_latency_ms: number;
+        cached_records: number;
+      }[];
+    }>("/admin/integrations"),
+  testIntegrations: () =>
+    request<{
+      status: string;
+      timestamp: string;
+      tests_passed: number;
+      tests_failed: number;
+      average_ping_ms: number;
+    }>("/admin/integrations/test", { method: "POST" }),
+  myPermissions: () =>
+    request<{ role: string; capabilities: Capabilities }>("/users/me/permissions"),
 };

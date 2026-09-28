@@ -61,14 +61,17 @@ def record_decision(
     db.commit()
     db.refresh(decision)
 
+    # ⚠️  Admin decisions are separately flagged in the audit log for scrutiny
+    audit_action = "admin_decision_override" if user.role == "admin" else "officer_decision"
     append_audit(
         db,
         actor=f"user:{user.id}",
-        action="officer_decision",
+        action=audit_action,
         entity=f"submission:{submission_id}",
         payload={
             "decision": body.decision,
             "overrides": overrides,
+            "actor_role": user.role,
             "justification_hash": __import__("hashlib").sha256(body.justification.encode()).hexdigest()[:16],
         },
     )

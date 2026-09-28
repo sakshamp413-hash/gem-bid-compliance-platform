@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { api, SubmissionDetail, Document, Finding } from "../api/client";
+import { useAuth } from "../auth/AuthContext";
+import { usePermissions } from "../auth/usePermissions";
 import {
   ActionBadge, Card, ErrorBox, ResultChip, RiskBadge, Spinner,
 } from "../components/ui";
@@ -27,10 +29,12 @@ function DecisionModal({
   onClose,
   onConfirm,
   recommendedAction,
+  userRole,
 }: {
   onClose: () => void;
   onConfirm: (decision: string, justification: string) => Promise<void>;
   recommendedAction: string | null;
+  userRole: string;
 }) {
   const [decision, setDecision] = useState(
     recommendedAction === "qualify" ? "qualify" : recommendedAction === "disqualify_candidate" ? "disqualify" : "escalate",
@@ -38,6 +42,10 @@ function DecisionModal({
   const [justification, setJustification] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isOverride =
+    (recommendedAction === "qualify" && decision !== "qualify") ||
+    (recommendedAction === "disqualify_candidate" && decision !== "disqualify");
 
   const submit = async () => {
     setBusy(true);
@@ -54,10 +62,27 @@ function DecisionModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
       <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-sm font-bold text-gov-navy">Officer decision (human-in-the-loop)</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-bold text-gov-navy">
+            {userRole === "admin" ? "⚠️ Administrative Decision (Override Workflow)" : "Procurement Decision (Human-in-the-Loop)"}
+          </h3>
+        </div>
         <p className="mt-1 text-[11px] text-slate-500">
           The AI recommends — you decide. Every decision is written to the hash-chained audit log.
         </p>
+
+        {userRole === "admin" && (
+          <div className="mt-3 rounded border border-amber-300 bg-amber-50 p-2.5 text-xs text-amber-800">
+            <b>⚠️ Administrative Action Warning:</b> You are recording a procurement decision as an <b>Administrator</b>. This bypasses the standard evaluation officer workflow and will be permanently logged under <code className="rounded bg-amber-200/60 px-1 font-mono text-[10px]">admin_decision_override</code> in the tamper-evident audit log.
+          </div>
+        )}
+
+        {userRole === "officer" && isOverride && (
+          <div className="mt-3 rounded border border-purple-200 bg-purple-50 p-2 text-xs text-purple-800">
+            <b>* Recommendation Override Notice:</b> Your selected decision deviates from the AI compliance recommendation. Detailed factual justification citing verified evidence is mandatory under GFR Rule 173.
+          </div>
+        )}
+
         <div className="mt-4 space-y-3">
           <div>
             <label className="label">Decision</label>
@@ -69,23 +94,25 @@ function DecisionModal({
             </select>
           </div>
           <div>
-            <label className="label">Justification (required — min 10 chars)</label>
+            <label className="label">
+              Justification {isOverride || userRole === "admin" ? "(Mandatory — min 10 chars)" : "(required — min 10 chars)"}
+            </label>
             <textarea
               className="input min-h-24"
               value={justification}
               onChange={(e) => setJustification(e.target.value)}
-              placeholder="State the basis of your decision, referencing the evidence…"
+              placeholder="State the basis of your decision, referencing the evidence and statutory rules…"
             />
           </div>
           {error && <div className="rounded bg-red-50 p-2 text-xs text-red-700">{error}</div>}
           <div className="flex justify-end gap-2">
             <button className="btn-outline" onClick={onClose}>Cancel</button>
             <button
-              className="btn-primary"
+              className={userRole === "admin" ? "btn-primary bg-amber-700 hover:bg-amber-800" : "btn-primary"}
               disabled={busy || justification.trim().length < 10}
               onClick={submit}
             >
-              {busy ? "Recording…" : "Record decision"}
+              {busy ? "Recording…" : userRole === "admin" ? "Record Administrative Decision ⚠️" : "Record Decision"}
             </button>
           </div>
         </div>
@@ -96,6 +123,8 @@ function DecisionModal({
 
 export default function BidderDetailPage() {
   const { id } = useParams();
+  const { user } = useAuth();
+  const { can } = usePermissions();
   const [detail, setDetail] = useState<SubmissionDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeDoc, setActiveDoc] = useState<Document | null>(null);
@@ -103,7 +132,11 @@ export default function BidderDetailPage() {
   const [reassessing, setReassessing] = useState(false);
   const [findings, setFindings] = useState<Finding[]>([]);
 
-const load = () => {
+  const canDecide = can("procurement_decision");
+  const isAuditor = user?.role === "auditor";
+  const isAdmin = user?.role === "admin";
+
+  const load = () => {
     api
       .submission(Number(id))
       .then((d) => {
@@ -137,6 +170,12 @@ const load = () => {
 
   return (
     <div className="space-y-4">
+      {isAuditor && (
+        <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-800">
+          <b>👁️ Auditor Evidence Review Mode:</b> Segregation of duties active. You have read-only access to bid documents, verification checks, and tamper indicators. Procurement decisions and assessment triggers are restricted to authorized Officers under CVC Guidelines.
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-gov-navy">{detail.bidder?.legal_name}</h1>
@@ -154,24 +193,31 @@ const load = () => {
           >
             ⬇ Download report (PDF)
           </button>
-          <button
-            className="btn-outline"
-            disabled={reassessing}
-            onClick={async () => {
-              setReassessing(true);
-              try {
-                await api.assess(Number(id));
-                load();
-              } finally {
-                setReassessing(false);
-              }
-            }}
-          >
-            {reassessing ? "Re-assessing…" : "Re-run assessment"}
-          </button>
-          <button className="btn-primary" onClick={() => setModalOpen(true)}>
-            Record decision
-          </button>
+          {!isAuditor && (
+            <button
+              className="btn-outline"
+              disabled={reassessing}
+              onClick={async () => {
+                setReassessing(true);
+                try {
+                  await api.assess(Number(id));
+                  load();
+                } finally {
+                  setReassessing(false);
+                }
+              }}
+            >
+              {reassessing ? "Re-assessing…" : "Re-run assessment"}
+            </button>
+          )}
+          {canDecide && (
+            <button
+              className={isAdmin ? "btn-primary bg-amber-700 hover:bg-amber-800" : "btn-primary"}
+              onClick={() => setModalOpen(true)}
+            >
+              {isAdmin ? "Record Administrative Decision ⚠️" : "Record decision"}
+            </button>
+          )}
         </div>
       </div>
 
@@ -293,6 +339,7 @@ const load = () => {
         <DecisionModal
           onClose={() => setModalOpen(false)}
           recommendedAction={a?.recommendation_action ?? null}
+          userRole={user?.role || "officer"}
           onConfirm={async (decision, justification) => {
             await api.decision(Number(id), decision, justification);
             load();

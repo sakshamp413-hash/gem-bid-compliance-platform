@@ -9,8 +9,7 @@ SAME output contract:
 Fields optionally carry a page + bounding box (pdf points) so the UI can
 highlight the exact location on the rendered page.
 """
-from __future__ import annotations
-
+import json
 import re
 from typing import Any
 

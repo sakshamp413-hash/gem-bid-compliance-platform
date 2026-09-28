@@ -5,6 +5,7 @@ import LoginPage from "./pages/LoginPage";
 import TendersPage from "./pages/TendersPage";
 import SubmissionsPage from "./pages/SubmissionsPage";
 import BidderDetailPage from "./pages/BidderDetailPage";
+import RulesPage from "./pages/RulesPage";
 import AdminPage from "./pages/AdminPage";
 import AuditorPage from "./pages/AuditorPage";
 
@@ -28,23 +29,40 @@ export default function App() {
               </Protected>
             }
           >
+            {/* Tenders — Officer ✅, Auditor 👁️, Admin ✅ */}
             <Route path="/tenders" element={<TendersPage />} />
             <Route path="/tenders/:tenderId" element={<SubmissionsPage />} />
+
+            {/* Submissions & Bid/Evidence Review — Officer ✅, Auditor 👁️, Admin 👁️/⚠️ */}
             <Route path="/submissions" element={<SubmissionsPage />} />
             <Route path="/submissions/:id" element={<BidderDetailPage />} />
+
+            {/* Rules Engine — Rule Visibility for all 3 roles; Drafting/Publishing for Admin */}
+            <Route
+              path="/rules"
+              element={
+                <Protected roles={["officer", "auditor", "admin"]}>
+                  <RulesPage />
+                </Protected>
+              }
+            />
+
+            {/* Audit Verification — Officer ✅, Auditor ✅, Admin ✅ */}
+            <Route
+              path="/auditor"
+              element={
+                <Protected roles={["officer", "auditor", "admin"]}>
+                  <AuditorPage />
+                </Protected>
+              }
+            />
+
+            {/* Admin Console — User Management ✅ & Integration Management ✅ (Admin Only) */}
             <Route
               path="/admin"
               element={
                 <Protected roles={["admin"]}>
                   <AdminPage />
-                </Protected>
-              }
-            />
-            <Route
-              path="/auditor"
-              element={
-                <Protected roles={["auditor", "admin"]}>
-                  <AuditorPage />
                 </Protected>
               }
             />

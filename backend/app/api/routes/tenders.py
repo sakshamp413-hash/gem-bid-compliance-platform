@@ -37,17 +37,19 @@ def get_tender(
 @router.post("", response_model=TenderOut)
 def create_tender(
     body: TenderIn,
-    admin: User = Depends(require_roles("admin")),
+    actor: User = Depends(require_roles("officer", "admin")),
     db: Session = Depends(get_db),
 ):
+    """Tender ingestion — officer and admin can ingest/create tenders."""
     if db.query(Tender).filter(Tender.gem_ref == body.gem_ref).first():
         raise HTTPException(status.HTTP_409_CONFLICT, "gem_ref already exists")
     tender = Tender(**body.model_dump())
     db.add(tender)
     db.commit()
     db.refresh(tender)
-    append_audit(db, actor=f"user:{admin.id}", action="create_tender",
-                 entity=f"tender:{tender.id}", payload={"gem_ref": tender.gem_ref})
+    append_audit(db, actor=f"user:{actor.id}", action="create_tender",
+                 entity=f"tender:{tender.id}",
+                 payload={"gem_ref": tender.gem_ref, "ingested_by_role": actor.role})
     return tender
 
 

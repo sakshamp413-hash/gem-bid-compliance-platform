@@ -12,6 +12,59 @@ from app.schemas.schemas import MessageOut, UserCreate, UserOut, UserUpdate
 
 router = APIRouter(prefix="/users", tags=["users"])
 
+# Capability matrix — single source of truth for both backend enforcement and frontend UI
+ROLE_CAPABILITIES: dict[str, dict[str, bool]] = {
+    "officer": {
+        "tender_ingestion": True,
+        "bid_evidence_review": True,
+        "compliance_score": True,
+        "risk_fraud_indicators": True,
+        "rule_visibility": True,
+        "procurement_decision": True,
+        "decision_override": True,
+        "audit_verification": True,
+        "rule_drafting": False,
+        "rule_publishing": False,
+        "user_management": False,
+        "integration_management": False,
+    },
+    "auditor": {
+        "tender_ingestion": False,       # 👁 read-only — enforced in UI (no create button)
+        "bid_evidence_review": True,     # 👁 read-only — no re-assess or upload buttons
+        "compliance_score": True,
+        "risk_fraud_indicators": True,
+        "rule_visibility": True,
+        "procurement_decision": False,
+        "decision_override": False,
+        "audit_verification": True,
+        "rule_drafting": False,
+        "rule_publishing": False,
+        "user_management": False,
+        "integration_management": False,
+    },
+    "admin": {
+        "tender_ingestion": True,
+        "bid_evidence_review": True,     # 👁 read-only by convention — decision is flagged ⚠️
+        "compliance_score": True,
+        "risk_fraud_indicators": True,
+        "rule_visibility": True,
+        "procurement_decision": True,    # ⚠️ flagged as admin_decision_override in audit
+        "decision_override": True,       # ⚠️ flagged as admin_decision_override in audit
+        "audit_verification": True,
+        "rule_drafting": True,
+        "rule_publishing": True,         # * requires PUT /admin/rules (admin only)
+        "user_management": True,
+        "integration_management": True,
+    },
+}
+
+
+@router.get("/me/permissions")
+def get_my_permissions(user: User = Depends(get_current_user)):
+    """Return the RBAC capability map for the logged-in user's role."""
+    caps = ROLE_CAPABILITIES.get(user.role, {})
+    return {"role": user.role, "capabilities": caps}
+
 
 @router.get("", response_model=list[UserOut])
 def list_users(
